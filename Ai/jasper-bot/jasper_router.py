@@ -8,10 +8,11 @@ import os
 app = FastAPI(title="Jasper - Master AI Orchestrator")
 
 # Microservice URLs (Internal Network)
+# Note: Identity Verification (Port 8003) is a standalone module
+# that works directly in the Seller Registration UI, not through Jasper.
 SMART_ASSISTANT_URL = "http://localhost:8000"
 ITEM_VERIFY_URL = "http://localhost:8001"
 RECOMMENDER_URL = "http://localhost:8002"
-IDENTITY_VERIFY_URL = "http://localhost:8003"
 
 class ChatRequest(BaseModel):
     user_role: str # "guest", "seller", "bidder"
