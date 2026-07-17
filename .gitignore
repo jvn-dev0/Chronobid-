@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Chronobid Specific
+Ai/item-verification/dataset_images/
+Ai/item-verification/temp_uploads/
+Ai/item-verification/dataset_metadata.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
