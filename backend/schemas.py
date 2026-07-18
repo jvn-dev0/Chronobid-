@@ -66,3 +66,42 @@ class WalletResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class DepositRequest(BaseModel):
+    amount: float
+    payment_method: str # e.g. 'Credit Card', 'UPI'
+
+class WithdrawRequest(BaseModel):
+    amount: float
+    bank_account: str
+
+class WalletTransactionResponse(BaseModel):
+    id: int
+    amount: float
+    transaction_type: str
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+# ─── Shipping Schemas ──────────────────────────────────────────────────────────
+class ShippingUpdate(BaseModel):
+    order_id: int
+    courier_name: str
+    tracking_number: str
+
+class ShippingResponse(BaseModel):
+    id: int
+    order_id: int
+    courier_name: Optional[str] = None
+    tracking_number: Optional[str] = None
+    shipping_status: str
+
+    class Config:
+        from_attributes = True
+
+# ─── Admin Schemas ────────────────────────────────────────────────────────────
+class AdminActionRequest(BaseModel):
+    auction_id: int
+    action: str # "Approve" or "Reject"
+    comments: Optional[str] = None

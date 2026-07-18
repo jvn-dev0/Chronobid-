@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, auctions, bids
+from routers import auth, auctions, bids, wallet, shipping, admin
 
 app = FastAPI(title="ChronoBid Core Backend API")
 
@@ -17,6 +17,9 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(auctions.router)
 app.include_router(bids.router)
+app.include_router(wallet.router)
+app.include_router(shipping.router)
+app.include_router(admin.router)
 
 @app.get("/")
 def read_root():
