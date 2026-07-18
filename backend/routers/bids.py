@@ -64,3 +64,14 @@ def place_bid(
     db.refresh(new_bid)
     
     return new_bid
+
+from typing import List
+@router.get("/my-bids", response_model=List[schemas.BidResponse])
+def get_my_bids(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """ Get all bids placed by the logged-in buyer """
+    buyer_profile = db.query(models.Buyer).filter(models.Buyer.user_id == current_user.id).first()
+    if not buyer_profile:
+        raise HTTPException(status_code=403, detail="Only buyers have bids")
+
+    my_bids = db.query(models.Bid).filter(models.Bid.buyer_id == buyer_profile.id).order_by(models.Bid.timestamp.desc()).all()
+    return my_bids

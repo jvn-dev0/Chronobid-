@@ -105,3 +105,21 @@ class AdminActionRequest(BaseModel):
     auction_id: int
     action: str # "Approve" or "Reject"
     comments: Optional[str] = None
+
+# ─── Order & Finalization Schemas ──────────────────────────────────────────────
+class OrderResponse(BaseModel):
+    id: int
+    auction_id: int
+    buyer_id: int
+    amount: float
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class FinalizeResponse(BaseModel):
+    message: str
+    auction_status: str
+    winning_bid: Optional[float] = None
+    order_id: Optional[int] = None
