@@ -1,5 +1,7 @@
 from database import engine, Base
 import models
+import models_phase2
+import models_phase3_ai
 
 print("Connecting to Supabase PostgreSQL...")
 try:
