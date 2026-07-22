@@ -16,6 +16,10 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class GoogleLogin(BaseModel):
+    credential: str
+    role: Optional[str] = "buyer"  # Default role for new signups via Google
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
@@ -123,3 +127,35 @@ class FinalizeResponse(BaseModel):
     auction_status: str
     winning_bid: Optional[float] = None
     order_id: Optional[int] = None
+
+# ─── Seller Application Schemas ────────────────────────
+class SellerApplicationRequest(BaseModel):
+    # Step 3: Personal Information
+    dob: str
+    gender: str
+    nationality: str
+    country: str
+    state: str
+    city: str
+    street_address: str
+    landmark: Optional[str] = None
+    postal_code: str
+    
+    # Step 4: Identity Verification
+    id_document_type: str
+    id_document_number: str
+    id_expiry_date: Optional[str] = None
+    id_document_url: str
+    selfie_url: str
+
+    # Step 5: Contact Verification
+    phone_number: Optional[str] = None
+    phone_verified: Optional[bool] = False
+
+    # Step 6: Bank Information
+    bank_account_name: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_branch_name: Optional[str] = None
+    bank_account_type: Optional[str] = None

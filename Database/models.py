@@ -60,8 +60,36 @@ class Seller(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
     shop_name = Column(String(100))
     shop_description = Column(Text)
-    verification_status = Column(String(50), default="Pending") # Pending, Approved, Rejected
+    verification_status = Column(String(50), default="Pending") # Pending, Pending_Review, Approved, Rejected
     trust_score = Column(Float, default=50.0)
+    
+    # --- Application Fields (Step 3 & 4) ---
+    dob = Column(String(50))
+    gender = Column(String(50))
+    nationality = Column(String(100))
+    country = Column(String(100))
+    state = Column(String(100))
+    city = Column(String(100))
+    street_address = Column(String(255))
+    landmark = Column(String(255))
+    postal_code = Column(String(50))
+    id_document_type = Column(String(100))
+    id_document_number = Column(String(100))
+    id_expiry_date = Column(String(50))
+    id_document_url = Column(String(500))
+    selfie_url = Column(String(500))
+    
+    # --- Contact Verification (Step 5) ---
+    phone_number = Column(String(50))
+    phone_verified = Column(Boolean, default=False)
+    
+    # --- Bank Information (Step 6) ---
+    bank_account_name = Column(String(150))
+    bank_name = Column(String(100))
+    bank_account_number = Column(String(100))
+    bank_ifsc = Column(String(50))
+    bank_branch_name = Column(String(100))
+    bank_account_type = Column(String(50))
     
     user = relationship("User", back_populates="seller_profile")
     auctions = relationship("Auction", back_populates="seller")

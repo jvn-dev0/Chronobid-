@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, auctions, bids, wallet, shipping, admin
+from fastapi.staticfiles import StaticFiles
+import os
+from routers import auth, auctions, bids, wallet, shipping, admin, seller
 
 app = FastAPI(title="ChronoBid Core Backend API")
 
@@ -14,12 +16,18 @@ app.add_middleware(
 )
 
 # Include all of our routers
+# Mount uploads directory for static file serving
+uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads')
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
 app.include_router(auth.router)
 app.include_router(auctions.router)
 app.include_router(bids.router)
 app.include_router(wallet.router)
 app.include_router(shipping.router)
 app.include_router(admin.router)
+app.include_router(seller.router)
 
 @app.get("/")
 def read_root():
