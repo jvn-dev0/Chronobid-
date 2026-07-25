@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import s from '../auth.module.css';
 import { getRole } from '../../lib/api';
-
+import Logo from '../../components/Logo';
 export default function RoleSelectPage() {
   const router = useRouter();
 
@@ -25,15 +25,7 @@ export default function RoleSelectPage() {
         <div className={s.leftPanel}>
           <div className={s.leftContent}>
             {/* Logo */}
-            <div className={s.logo}>
-              <span className={s.logoIcon}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m14 13-3 3 2 2-3 3-2-2-1 1-1-1 1-1-2-2 3-3 2 2 3-3-2-2 1-1z"/><path d="m16 11 3-3-2-2-3 3"/><path d="m18 9 2-2-2-2-2 2"/></svg>
-              </span>
-              <div className={s.logoText}>
-                <h1>ChronoBid</h1>
-                <p>Bid. Win. Own History.</p>
-              </div>
-            </div>
+            <Logo size={28} fontSize={24} />
 
             {/* Headline */}
             <div className={s.roleLeftHeadline}>

@@ -122,10 +122,11 @@ def submit_seller_application(
     seller = db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first()
 
     if not seller:
-        raise HTTPException(
-            status_code=404,
-            detail="Seller profile not found. Please make sure you selected 'Seller' as your role."
-        )
+        # Create the seller profile automatically since they are submitting an application
+        seller = models.Seller(user_id=current_user.id, verification_status="Pending")
+        db.add(seller)
+        db.commit()
+        db.refresh(seller)
 
     # Allow re-submission only if still Pending (not yet reviewed)
     if seller.verification_status not in ["Pending", "Rejected"]:
@@ -328,3 +329,54 @@ def verify_identity_with_ai(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI Processing Error: {str(e)}")
+
+# ─── 7. Get Seller Dashboard Metrics ───────────────────────────
+@router.get("/dashboard", status_code=status.HTTP_200_OK)
+def get_seller_dashboard(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Returns aggregated metrics for the Seller Dashboard.
+    """
+    seller = db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first()
+    if not seller:
+        raise HTTPException(status_code=404, detail="Seller profile not found.")
+
+    # 1. Active Auctions
+    active_auctions = db.query(models.Auction).filter(
+        models.Auction.seller_id == seller.id,
+        models.Auction.status == "Live"
+    ).count()
+
+    # 2. Pending Approval
+    pending_auctions = db.query(models.Auction).filter(
+        models.Auction.seller_id == seller.id,
+        models.Auction.status == "Draft"
+    ).count()
+
+    # 3. Total Bids
+    total_bids = db.query(models.Bid).join(models.Auction).filter(
+        models.Auction.seller_id == seller.id
+    ).count()
+
+    # 4. Earnings
+    wallet = db.query(models.Wallet).filter(models.Wallet.user_id == current_user.id).first()
+    earnings = wallet.balance if wallet else 0.0
+
+    return {
+        "seller": {
+            "first_name": current_user.first_name,
+            "last_name": current_user.last_name,
+            "verification_status": seller.verification_status,
+            "shop_name": seller.shop_name,
+            "trust_score": seller.trust_score
+        },
+        "metrics": {
+            "active_auctions": active_auctions,
+            "pending_approval": pending_auctions,
+            "total_views": 0,  # Placeholder as per design
+            "total_bids": total_bids,
+            "total_earnings": earnings
+        }
+    }

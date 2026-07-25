@@ -103,3 +103,23 @@ export function clearSession() {
   localStorage.removeItem('chronobid_role');
   localStorage.removeItem('chronobid_user_id');
 }
+
+// ── Auction API Calls ──────────────────────────────────────
+
+// We no longer need AuctionCreatePayload interface here since we'll use FormData
+
+/**
+ * Creates a new auction listing in the database (via FastAPI -> Supabase)
+ * and uploads the primary image for AI verification.
+ */
+export async function createAuction(formData: FormData, token: string) {
+  const res = await fetch(`${BASE_URL}/api/auctions/create`, {
+    method: 'POST',
+    headers: {
+      // Do NOT set Content-Type for FormData, the browser will set it with the correct boundary
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData,
+  });
+  return handleResponse<any>(res);
+}

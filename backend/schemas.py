@@ -44,6 +44,7 @@ class AuctionResponse(BaseModel):
     status: str
     start_time: datetime
     end_time: datetime
+    ai_data: Optional[dict] = None
 
     class Config:
         from_attributes = True

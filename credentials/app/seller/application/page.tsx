@@ -66,7 +66,15 @@ export default function SellerApplicationPage() {
   }, [step]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    
+    // Aadhaar specific formatting (XXXX XXXX XXXX)
+    if (name === 'id_document_number' && form.id_document_type === 'Aadhaar') {
+      value = value.replace(/\D/g, '').substring(0, 12);
+      value = value.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    }
+    
+    setForm({ ...form, [name]: value });
   };
 
   // ── Helper: upload a file to backend and return saved URL ──

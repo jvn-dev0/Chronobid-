@@ -7,7 +7,7 @@ CATEGORIES = [
     "clock", "coin", "sculpture", "pottery", 
     "furniture", "painting", "crown", "watch", "clothes"
 ]
-MAX_ITEMS_PER_CATEGORY = 20  # Limit to 20 for MVP to save time/space
+MAX_ITEMS_PER_CATEGORY = 2  # Reduced to 2 for fast MVP initialization
 DATASET_DIR = "dataset_images"
 METADATA_FILE = "dataset_metadata.json"
 

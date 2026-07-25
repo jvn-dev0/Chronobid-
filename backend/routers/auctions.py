@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from typing import List
 import sys
 import os
 import httpx
+import shutil
+from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Database')))
 import models
 import schemas
@@ -14,7 +16,15 @@ router = APIRouter(prefix="/api/auctions", tags=["Auctions"])
 
 @router.post("/create", response_model=schemas.AuctionResponse)
 async def create_auction(
-    auction_data: schemas.AuctionCreate, 
+    title: str = Form(...),
+    category_id: int = Form(...),
+    start_time: str = Form(...),
+    end_time: str = Form(...),
+    reserve_price: float = Form(...),
+    description: str = Form(...),
+    condition: str = Form(None),
+    material: str = Form(None),
+    file: UploadFile = File(...),
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
 ):
@@ -23,33 +33,63 @@ async def create_auction(
     if not seller_profile:
         raise HTTPException(status_code=403, detail="Only registered sellers can create auctions")
 
-    # 1. Create the Auction Record
+    # 1. Save the uploaded file locally
+    os.makedirs("uploads", exist_ok=True)
+    file_location = f"uploads/{file.filename}"
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+
+    # 2. Call AI to verify the item
+    try:
+        with open(file_location, "rb") as f:
+            # We assume AI service is running on 8001
+            response = httpx.post("http://localhost:8001/verify", files={"file": (file.filename, f, file.content_type)})
+            
+        if response.status_code != 200:
+            # Clean up and reject
+            os.remove(file_location)
+            raise HTTPException(status_code=400, detail="AI Verification failed. Please upload clearer images from multiple directions.")
+            
+        ai_data = response.json()
+        
+        if ai_data.get("category_confidence", 1.0) < 0.6:
+            os.remove(file_location)
+            raise HTTPException(status_code=400, detail="AI Verification confidence too low. Please upload clearer images from all directions.")
+
+    except httpx.RequestError:
+        # If AI is down, we might allow it but mark as pending, or reject. Let's reject for now to be safe.
+        raise HTTPException(status_code=503, detail="AI Verification service is currently unavailable.")
+
+    # Parse datetimes
+    dt_start = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+    dt_end = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+
+    # 3. Create the Auction Record
     new_auction = models.Auction(
         seller_id=seller_profile.id,
-        category_id=auction_data.category_id,
-        title=auction_data.title,
-        start_time=auction_data.start_time,
-        end_time=auction_data.end_time,
-        reserve_price=auction_data.reserve_price,
-        status="Pending_Verification" # Starts pending until AI Jasper verifies it
+        category_id=category_id,
+        title=title,
+        start_time=dt_start,
+        end_time=dt_end,
+        reserve_price=reserve_price,
+        status="Live" # Mark Live since AI verified it
     )
     db.add(new_auction)
     db.commit()
     db.refresh(new_auction)
 
-    # 2. Create the Auction Item Record (The physical item details)
+    # 4. Create the Auction Item Record (The physical item details)
     new_item = models.AuctionItem(
         auction_id=new_auction.id,
-        description=auction_data.description,
-        condition=auction_data.condition,
-        material=auction_data.material
+        description=description,
+        condition=condition,
+        material=material or ai_data.get("predicted_material") # Optionally use AI prediction
     )
     db.add(new_item)
     db.commit()
-
-    # 3. Call Jasper to verify the item (Simulation)
-    # In a real flow, Jasper would be called here via httpx to verify the item image
-    # For now, we assume Jasper will eventually approve it and change status to 'Live'
+    
+    # Attach AI data to response
+    new_auction.ai_data = ai_data
     
     return new_auction
 
