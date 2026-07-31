@@ -11,8 +11,11 @@ export default function RegisterPage() {
 
   // Form state
   const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
     username: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   });
@@ -35,6 +38,8 @@ export default function RegisterPage() {
 
   const validate = () => {
     const errors: Record<string, string> = {};
+    if (!form.firstName.trim()) errors.firstName = 'First name is required';
+    if (!form.lastName.trim()) errors.lastName = 'Last name is required';
     if (!form.username.trim()) errors.username = 'Username is required';
     if (!form.email.trim()) errors.email = 'Email is required';
     if (form.password.length < 8) errors.password = 'Password must be at least 8 characters';
@@ -55,13 +60,12 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // Split username as first/last for now (user can update in profile later)
-      const nameParts = form.username.trim().split(' ');
       await registerUser({
-        first_name: nameParts[0] || form.username,
-        last_name: nameParts[1] || '',
+        first_name: form.firstName,
+        last_name: form.lastName,
         username: form.username,
         email: form.email,
+        phone: form.phone,
         password: form.password,
         role: 'buyer', // Default role — will be chosen on next screen
       });
@@ -132,11 +136,32 @@ export default function RegisterPage() {
 
           <form className={s.form} onSubmit={handleSubmit}>
 
+            {/* Name Fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className={s.fieldGroup}>
+                <label htmlFor="firstName">First Name</label>
+                <div className={`${s.inputWrapper} ${fieldErrors.firstName ? s.inputError : ''}`}>
+                  <span className={s.inputIcon}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <input id="firstName" type="text" placeholder="First name" value={form.firstName} onChange={handleChange} required />
+                </div>
+                {fieldErrors.firstName && <span className={s.fieldError}>{fieldErrors.firstName}</span>}
+              </div>
+
+              <div className={s.fieldGroup}>
+                <label htmlFor="lastName">Last Name</label>
+                <div className={`${s.inputWrapper} ${fieldErrors.lastName ? s.inputError : ''}`}>
+                  <span className={s.inputIcon}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <input id="lastName" type="text" placeholder="Last name" value={form.lastName} onChange={handleChange} required />
+                </div>
+                {fieldErrors.lastName && <span className={s.fieldError}>{fieldErrors.lastName}</span>}
+              </div>
+            </div>
+
             {/* Username */}
             <div className={s.fieldGroup}>
               <label htmlFor="username">Username</label>
               <div className={`${s.inputWrapper} ${fieldErrors.username ? s.inputError : ''}`}>
-                <span className={s.inputIcon}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span className={s.inputIcon}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                 <input id="username" type="text" placeholder="Choose a username" value={form.username} onChange={handleChange} required />
               </div>
               {fieldErrors.username && <span className={s.fieldError}>{fieldErrors.username}</span>}
@@ -150,6 +175,15 @@ export default function RegisterPage() {
                 <input id="email" type="email" placeholder="Enter your email" value={form.email} onChange={handleChange} required />
               </div>
               {fieldErrors.email && <span className={s.fieldError}>{fieldErrors.email}</span>}
+            </div>
+
+            {/* Phone */}
+            <div className={s.fieldGroup}>
+              <label htmlFor="phone">Phone Number (Optional)</label>
+              <div className={`${s.inputWrapper} ${fieldErrors.phone ? s.inputError : ''}`}>
+                <span className={s.inputIcon}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+                <input id="phone" type="tel" placeholder="Enter your phone number" value={form.phone} onChange={handleChange} />
+              </div>
             </div>
 
             {/* Password */}

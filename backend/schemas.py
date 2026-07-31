@@ -160,3 +160,37 @@ class SellerApplicationRequest(BaseModel):
     bank_ifsc: Optional[str] = None
     bank_branch_name: Optional[str] = None
     bank_account_type: Optional[str] = None
+
+# ─── Bidding Page Schemas ────────────────────────────────────────────────────────
+from typing import List
+
+class BidHistoryItem(BaseModel):
+    id: int
+    bid_amount: float
+    timestamp: datetime
+    buyer_name: str
+
+    class Config:
+        from_attributes = True
+
+class AuctionDetailResponse(AuctionResponse):
+    description: Optional[str] = None
+    condition: Optional[str] = None
+    material: Optional[str] = None
+    seller_name: str
+    current_highest_bid: Optional[float] = None
+    bid_history: List[BidHistoryItem] = []
+
+# ─── Escrow Schemas ──────────────────────────────────────────────────────────
+class EscrowResponse(BaseModel):
+    id: int
+    auction_id: int
+    locked_amount: float
+    status: str
+    auction_title: Optional[str] = None
+    seller_name: Optional[str] = None
+    buyer_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+

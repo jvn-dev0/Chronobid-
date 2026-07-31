@@ -19,6 +19,18 @@ def get_wallet_balance(current_user: models.User = Depends(get_current_user), db
         raise HTTPException(status_code=404, detail="Wallet not found")
     return wallet
 
+@router.get("/transactions", response_model=List[schemas.WalletTransactionResponse])
+def get_wallet_transactions(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    wallet = db.query(models.Wallet).filter(models.Wallet.user_id == current_user.id).first()
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    
+    transactions = db.query(models_phase2.WalletTransaction).filter(
+        models_phase2.WalletTransaction.wallet_id == wallet.id
+    ).order_by(models_phase2.WalletTransaction.timestamp.desc()).all()
+    
+    return transactions
+
 @router.post("/deposit", response_model=schemas.WalletResponse)
 def deposit_funds(request: schemas.DepositRequest, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     """ Mock endpoint for Razorpay/Stripe deposit simulation """

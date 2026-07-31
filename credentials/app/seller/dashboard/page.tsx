@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Logo from '../../../components/Logo';
 import styles from './dashboard.module.css';
+import { clearSession } from '../../../lib/api';
 
 const FAQS = [
   { icon: '➕', text: 'How do I add my first item?' },
@@ -20,6 +21,12 @@ export default function SellerDashboard() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const historyRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    clearSession();
+    window.location.href = '/';
+  };
 
   useEffect(() => {
     historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
@@ -69,11 +76,11 @@ export default function SellerDashboard() {
               </button>
               {isProfileOpen && (
                 <div className={styles.dropdown}>
-                  <a href="#" className={styles.dropItem}>
+                  <a href="/seller/profile" className={styles.dropItem}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     Profile
                   </a>
-                  <a href="/login" className={`${styles.dropItem} ${styles.dropLogout}`}>
+                  <a href="#" onClick={handleLogout} className={`${styles.dropItem} ${styles.dropLogout}`}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     Logout
                   </a>
@@ -99,7 +106,7 @@ export default function SellerDashboard() {
               List your extraordinary items and reach the world's most serious buyers.
             </p>
             <div className={styles.heroActions}>
-              <button className={styles.heroCta}>Start Selling Today</button>
+              <Link href="/seller/sell"><button className={styles.heroCta}>Start Selling Today</button></Link>
               <a href="#how" className={styles.heroGhost}>See How It Works ↓</a>
             </div>
             <div className={styles.heroStats}>
@@ -162,10 +169,12 @@ export default function SellerDashboard() {
         </div>
 
         <div className={styles.howCta}>
-          <button className={styles.heroCta}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>
-            Start Your Submission
-          </button>
+          <Link href="/seller/sell">
+            <button className={styles.heroCta}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>
+              Start Your Submission
+            </button>
+          </Link>
         </div>
       </section>
 

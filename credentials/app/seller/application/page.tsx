@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import s from './seller.module.css';
+import { clearSession } from '../../../lib/api';
 
 export default function SellerApplicationPage() {
   const router = useRouter();
@@ -55,6 +56,11 @@ export default function SellerApplicationPage() {
       .then(data => { if (data.username) setUserData(data); })
       .catch(err => console.error('Could not fetch user profile', err));
   }, [router]);
+
+  const handleLogout = () => {
+    clearSession();
+    router.push('/');
+  };
 
   // Stop camera when leaving step 4
   useEffect(() => {
@@ -358,6 +364,13 @@ export default function SellerApplicationPage() {
               <div className={s.stepDesc}>Review and submit your application.</div>
             </div>
           </div>
+        </div>
+        
+        <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
+          <button onClick={handleLogout} className={s.backBtn} style={{ width: '100%', justifyContent: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span style={{ marginLeft: '8px' }}>Log Out</span>
+          </button>
         </div>
       </aside>
 

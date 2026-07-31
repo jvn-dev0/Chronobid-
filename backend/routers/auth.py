@@ -152,10 +152,20 @@ def google_login(login_data: schemas.GoogleLogin, db: Session = Depends(get_db))
         raise HTTPException(status_code=400, detail=f"Invalid Google Token: {str(e)}")
 
 @router.get("/me")
-def get_my_profile(current_user: models.User = Depends(get_current_user)):
+def get_my_profile(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     """ Secure endpoint to get logged in user's profile info """
+    role = "guest"
+    if db.query(models.Buyer).filter(models.Buyer.user_id == current_user.id).first():
+        role = "buyer"
+    elif db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first():
+        role = "seller"
+
     return {
         "id": current_user.id,
         "username": current_user.username,
-        "email": current_user.email
+        "email": current_user.email,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "phone": current_user.phone,
+        "role": role
     }
