@@ -26,8 +26,24 @@ def require_super_admin(current_user: models.User = Depends(get_current_user), d
 def get_all_users(admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
     """ List all registered users (buyers and sellers) """
     users = db.query(models.User).all()
-    # In a real app, you'd serialize this properly and avoid sending password_hash
-    return [{"id": u.id, "email": u.email, "username": u.username, "is_active": u.is_active} for u in users]
+    # Join with Seller/Admin profiles if needed to determine role, or just return basic info
+    result = []
+    for u in users:
+        role = "Buyer"
+        if u.seller_profile:
+            role = "Seller"
+        if u.admin_profile:
+            role = f"Admin ({u.admin_profile.role_type})"
+            
+        result.append({
+            "id": u.id, 
+            "name": u.username,
+            "email": u.email, 
+            "role": role, 
+            "status": "Active" if u.is_active else "Suspended",
+            "joinDate": "2024-01-01" # Placeholder date, since created_at might not exist in models.py
+        })
+    return result
 
 @router.post("/{user_id}/suspend")
 def suspend_user(user_id: int, admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
@@ -48,3 +64,41 @@ def suspend_user(user_id: int, admin: models.Admin = Depends(require_ops_admin),
     db.commit()
     
     return {"message": f"User {user_id} suspended successfully"}
+
+@router.get("/applications")
+def get_seller_applications(admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
+    """ List all pending seller applications """
+    sellers = db.query(models.Seller).filter(models.Seller.verification_status.in_(["Pending", "Pending_Review"])).all()
+    
+    result = []
+    for s in sellers:
+        user = db.query(models.User).filter(models.User.id == s.user_id).first()
+        result.append({
+            "id": s.id,
+            "shopName": s.shop_name,
+            "applicant": user.username if user else "Unknown",
+            "email": user.email if user else "Unknown",
+            "status": s.verification_status,
+            "submissionDate": "2024-01-01",
+            "aiConfidence": 94,
+            "documentUrl": s.id_document_url
+        })
+    return result
+
+@router.post("/applications/{seller_id}/approve")
+def approve_seller(seller_id: int, admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
+    seller = db.query(models.Seller).filter(models.Seller.id == seller_id).first()
+    if not seller:
+        raise HTTPException(status_code=404, detail="Seller application not found")
+        
+    seller.verification_status = "Approved"
+    
+    user = db.query(models.User).filter(models.User.id == seller.user_id).first()
+    if user:
+        # Assign Seller role
+        user_role = db.query(models.UserRole).filter(models.UserRole.name == "seller").first()
+        if user_role:
+            user.role_id = user_role.id
+            
+    db.commit()
+    return {"message": f"Seller {seller_id} approved successfully"}

@@ -4,12 +4,25 @@ import styles from '../admin.module.css';
 import { AlertTriangle, UserX, Wallet, CheckCircle2, Search, Crosshair } from 'lucide-react';
 
 export default function FraudDetectionPage() {
-  const [incidents, setIncidents] = useState([
-    { id: 'FRD-502', user: 'buyer_992', type: 'Bid Manipulation', risk: 'Critical', details: 'Multiple high bids placed and retracted rapidly across 5 auctions.', status: 'Investigating', date: '10 mins ago' },
-    { id: 'FRD-503', user: 'seller_105', type: 'Duplicate Identity', risk: 'High', details: 'Document hash matches a previously banned seller account.', status: 'Flagged', date: '1 hr ago' },
-    { id: 'FRD-504', user: 'buyer_771', type: 'Payment Fraud', risk: 'High', details: '3 failed stripe transactions with different blocked cards.', status: 'Resolved', date: '5 hrs ago' },
-    { id: 'FRD-505', user: 'seller_44', type: 'Suspicious IP', risk: 'Medium', details: 'Login from known VPN/Proxy IP address used by scammers.', status: 'Flagged', date: '1 day ago' },
-  ]);
+  const [incidents, setIncidents] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchFraudAlerts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/auctions/fraud-alerts', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setIncidents(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch fraud alerts", err);
+      }
+    };
+    fetchFraudAlerts();
+  }, []);
 
   return (
     <>

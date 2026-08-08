@@ -1,15 +1,28 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { Eye, FileCheck, XCircle, FileText, CheckCircle2 } from 'lucide-react';
 
 export default function SellersPage() {
-  const [applications, setApplications] = useState([
-    { id: 'APP-1049', shopName: 'Vintage Timepieces LLC', applicant: 'James Carter', status: 'Pending Review', submitted: '2 hours ago', aiScore: 92 },
-    { id: 'APP-1050', shopName: 'Swiss Classics', applicant: 'Elena Rossi', status: 'Pending Review', submitted: '5 hours ago', aiScore: 88 },
-    { id: 'APP-1051', shopName: 'Global Watches', applicant: 'Michael Chang', status: 'More Info Needed', submitted: '1 day ago', aiScore: 45 },
-    { id: 'APP-1045', shopName: 'Elite Chronos', applicant: 'Sarah Jenkins', status: 'Approved', submitted: '2 days ago', aiScore: 98 },
-  ]);
+  const [applications, setApplications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/users/applications', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setApplications(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch applications", err);
+      }
+    };
+    fetchApplications();
+  }, []);
 
   return (
     <>

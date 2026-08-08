@@ -18,6 +18,25 @@ def require_admin(current_user: models.User = Depends(get_current_user), db: Ses
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return admin_profile
 
+@router.get("/stats")
+def get_dashboard_stats(admin: models.Admin = Depends(require_admin), db: Session = Depends(get_db)):
+    """ Get overall platform statistics for the KPI dashboard """
+    total_users = db.query(models.User).count()
+    active_auctions = db.query(models.Auction).filter(models.Auction.status == "Live").count()
+    pending_auctions = db.query(models.Auction).filter(models.Auction.status == "Pending_Verification").count()
+    
+    # In a real app, you would sum up completed transactions.
+    # For now, return a placeholder revenue.
+    return {
+        "total_revenue": 128450,
+        "revenue_growth": 14.2,
+        "active_auctions": active_auctions,
+        "auctions_growth": 5.4,
+        "total_users": total_users,
+        "users_growth": -2.1,
+        "pending_approvals": pending_auctions,
+    }
+
 @router.get("/pending-auctions")
 def get_pending_auctions(admin: models.Admin = Depends(require_admin), db: Session = Depends(get_db)):
     """ View all auctions waiting for manual approval """

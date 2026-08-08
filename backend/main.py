@@ -30,6 +30,7 @@ app.include_router(admin.router)
 app.include_router(admin_users.router)
 app.include_router(admin_auctions.router)
 app.include_router(admin_finance.router)
+app.include_router(admin_system.router)
 app.include_router(seller.router)
 app.include_router(escrow.router)
 

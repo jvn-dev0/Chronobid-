@@ -4,12 +4,25 @@ import styles from '../admin.module.css';
 import { Eye, ShieldAlert, CheckCircle2, ShieldX, Bot, ScanFace, Image as ImageIcon } from 'lucide-react';
 
 export default function AIVerificationPage() {
-  const [reports, setReports] = useState([
-    { id: 'AI-2991', type: 'Identity', target: 'John Doe', ocrConfidence: 98, faceMatch: 99, risk: 'Low', status: 'Passed', date: '2 hrs ago' },
-    { id: 'AI-2992', type: 'Object Detection', target: 'AUC-991', ocrConfidence: 95, faceMatch: 85, risk: 'Low', status: 'Passed', date: '5 hrs ago' },
-    { id: 'AI-2993', type: 'Counterfeit', target: 'AUC-994', ocrConfidence: 45, faceMatch: 30, risk: 'High', status: 'Flagged', date: '1 day ago' },
-    { id: 'AI-2994', type: 'Identity', target: 'Jane Smith', ocrConfidence: 75, faceMatch: 60, risk: 'Medium', status: 'Manual Review', date: '1 day ago' },
-  ]);
+  const [reports, setReports] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/auctions/ai-reports', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setReports(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch AI reports", err);
+      }
+    };
+    fetchReports();
+  }, []);
 
   return (
     <>

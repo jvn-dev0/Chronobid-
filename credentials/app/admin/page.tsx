@@ -42,9 +42,35 @@ const categoryData = [
 
 export default function AdminDashboard() {
   const [mounted, setMounted] = useState(false);
+  const [stats, setStats] = useState({
+    total_revenue: 0,
+    revenue_growth: 0,
+    active_auctions: 0,
+    auctions_growth: 0,
+    total_users: 0,
+    users_growth: 0,
+    pending_approvals: 0
+  });
 
   useEffect(() => {
     setMounted(true);
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/stats', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin stats", err);
+      }
+    };
+    fetchStats();
   }, []);
 
   if (!mounted) return null; // Prevent hydration errors with recharts
@@ -54,7 +80,7 @@ export default function AdminDashboard() {
       <div className={styles.pageHeader}>
         <div>
           <h2 className={styles.pageTitle}>Dashboard Overview</h2>
-          <p className={styles.pageSubtitle}>Welcome back, Super Admin. Here is what is happening today.</p>
+          <p className={styles.pageSubtitle}>Welcome back, Admin. Here is what is happening today.</p>
         </div>
       </div>
 
@@ -70,7 +96,7 @@ export default function AdminDashboard() {
         <div className={`${styles.alertItem} ${styles.info}`}>
           <CheckCircle2 size={20} color="#3b82f6" />
           <div className={styles.alertContent}>
-            <h4>3 New Seller Applications</h4>
+            <h4>{stats.pending_approvals} New Seller Applications</h4>
             <p>There are new seller applications waiting for operations review.</p>
           </div>
         </div>
@@ -84,9 +110,11 @@ export default function AdminDashboard() {
               <DollarSign size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>$124,592.00</div>
+          <div className={styles.kpiValue}>${stats.total_revenue.toLocaleString()}</div>
           <div className={styles.kpiBottom}>
-            <span className={styles.trendUp}>↑ 12.5%</span> from last month
+            <span className={stats.revenue_growth >= 0 ? styles.trendUp : styles.trendDown}>
+              {stats.revenue_growth >= 0 ? '↑' : '↓'} {Math.abs(stats.revenue_growth)}%
+            </span> from last month
           </div>
         </div>
 
@@ -97,9 +125,11 @@ export default function AdminDashboard() {
               <Gavel size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>1,284</div>
+          <div className={styles.kpiValue}>{stats.active_auctions.toLocaleString()}</div>
           <div className={styles.kpiBottom}>
-            <span className={styles.trendUp}>↑ 8.2%</span> from last month
+            <span className={stats.auctions_growth >= 0 ? styles.trendUp : styles.trendDown}>
+              {stats.auctions_growth >= 0 ? '↑' : '↓'} {Math.abs(stats.auctions_growth)}%
+            </span> from last month
           </div>
         </div>
 
@@ -110,9 +140,11 @@ export default function AdminDashboard() {
               <Users size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>45,291</div>
+          <div className={styles.kpiValue}>{stats.total_users.toLocaleString()}</div>
           <div className={styles.kpiBottom}>
-            <span className={styles.trendUp}>↑ 14.1%</span> from last month
+            <span className={stats.users_growth >= 0 ? styles.trendUp : styles.trendDown}>
+              {stats.users_growth >= 0 ? '↑' : '↓'} {Math.abs(stats.users_growth)}%
+            </span> from last month
           </div>
         </div>
 
@@ -123,7 +155,7 @@ export default function AdminDashboard() {
               <Clock size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>84</div>
+          <div className={styles.kpiValue}>{stats.pending_approvals.toLocaleString()}</div>
           <div className={styles.kpiBottom}>
             <span className={styles.trendDown}>↓ 2.4%</span> from last month
           </div>

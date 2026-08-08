@@ -4,12 +4,25 @@ import styles from '../admin.module.css';
 import { DollarSign, ArrowUpRight, ArrowDownRight, CreditCard, Landmark, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function FinancePage() {
-  const [transactions, setTransactions] = useState([
-    { id: 'TXN-8812', user: 'buyer_992', type: 'Deposit', amount: 5000, method: 'Credit Card', status: 'Completed', date: '2 hrs ago' },
-    { id: 'TXN-8813', user: 'seller_105', type: 'Withdrawal', amount: 12500, method: 'Bank Transfer', status: 'Pending Review', date: '5 hrs ago' },
-    { id: 'TXN-8814', user: 'buyer_771', type: 'Escrow Lock', amount: 4200, method: 'Wallet balance', status: 'Locked', date: '1 day ago' },
-    { id: 'TXN-8815', user: 'seller_44', type: 'Platform Fee', amount: 250, method: 'System Deduction', status: 'Completed', date: '1 day ago' },
-  ]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/finance/transactions', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch transactions", err);
+      }
+    };
+    fetchTransactions();
+  }, []);
 
   return (
     <>

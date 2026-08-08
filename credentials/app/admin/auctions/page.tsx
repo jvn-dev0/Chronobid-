@@ -4,13 +4,25 @@ import styles from '../admin.module.css';
 import { Eye, CheckCircle2, XCircle, Clock, PlayCircle, StopCircle, Award } from 'lucide-react';
 
 export default function AuctionsPage() {
-  const [auctions, setAuctions] = useState([
-    { id: 'AUC-991', title: 'Vintage Rolex Submariner 1980', seller: 'Vintage Timepieces', category: 'Rolex', currentBid: 12500, status: 'Pending_Verification', endTime: '2023-10-25' },
-    { id: 'AUC-992', title: 'Omega Speedmaster Professional', seller: 'Swiss Classics', category: 'Omega', currentBid: 4200, status: 'Live', endTime: '2023-10-20' },
-    { id: 'AUC-993', title: 'Patek Philippe Calatrava', seller: 'Elite Chronos', category: 'Patek', currentBid: 18000, status: 'Ended', endTime: '2023-10-18' },
-    { id: 'AUC-994', title: 'Audemars Piguet Royal Oak', seller: 'Luxury Watches Co.', category: 'AP', currentBid: 0, status: 'Draft', endTime: '2023-11-01' },
-    { id: 'AUC-995', title: 'Cartier Tank Francaise', seller: 'Vintage Timepieces', category: 'Cartier', currentBid: 3100, status: 'Live', endTime: '2023-10-22' },
-  ]);
+  const [auctions, setAuctions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchAuctions = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/auctions/', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAuctions(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch auctions", err);
+      }
+    };
+    fetchAuctions();
+  }, []);
 
   return (
     <>

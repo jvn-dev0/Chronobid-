@@ -19,18 +19,26 @@ def require_finance_admin(current_user: models.User = Depends(get_current_user),
 def get_transactions(admin: models.Admin = Depends(require_finance_admin), db: Session = Depends(get_db)):
     """ Get all platform transactions (Deposits, Withdrawals, Escrow Locks) """
     transactions = db.query(models.Transaction).all()
-    # Serialize properly
-    return [
-        {
-            "id": t.id,
-            "wallet_id": t.wallet_id,
-            "type": t.type,
-            "amount": t.amount,
-            "status": t.status,
-            "timestamp": t.timestamp
-        }
-        for t in transactions
-    ]
+    result = []
+    for t in transactions:
+        wallet = db.query(models.Wallet).filter(models.Wallet.id == t.wallet_id).first()
+        user_name = "Unknown"
+        if wallet:
+            user = db.query(models.User).filter(models.User.id == wallet.user_id).first()
+            if user:
+                user_name = user.username
+                
+        result.append({
+            "id": f"TXN-{t.id}",
+            "user": user_name,
+            "type": t.type.capitalize(),
+            "amount": float(t.amount) if t.amount else 0,
+            "method": "Wallet Balance" if t.type == "escrow" else "System",
+            "status": "Completed" if t.status == "completed" else "Pending Review" if t.status == "pending" else t.status,
+            "date": str(t.timestamp) if t.timestamp else "N/A"
+        })
+        
+    return result
 
 @router.post("/withdrawals/{transaction_id}/approve")
 def approve_withdrawal(transaction_id: int, admin: models.Admin = Depends(require_finance_admin), db: Session = Depends(get_db)):

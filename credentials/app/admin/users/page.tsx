@@ -4,13 +4,25 @@ import styles from '../admin.module.css';
 import { MoreHorizontal, ShieldBan, ShieldCheck, Mail, Eye } from 'lucide-react';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([
-    { id: '1029', name: 'John Doe', email: 'john@example.com', role: 'Buyer', status: 'Active', joinDate: '2023-10-12' },
-    { id: '1030', name: 'Jane Smith', email: 'jane@example.com', role: 'Seller', status: 'Pending', joinDate: '2023-10-15' },
-    { id: '1031', name: 'Robert King', email: 'rob@example.com', role: 'Buyer', status: 'Suspended', joinDate: '2023-11-02' },
-    { id: '1032', name: 'Emily Davis', email: 'emily@example.com', role: 'Admin', status: 'Active', joinDate: '2023-01-05' },
-    { id: '1033', name: 'Michael Brown', email: 'michael@example.com', role: 'Seller', status: 'Active', joinDate: '2023-08-22' },
-  ]);
+  const [users, setUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8000/api/admin/users/', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   return (
     <>
