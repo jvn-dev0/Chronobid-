@@ -157,6 +157,15 @@ class WinningBid(Base):
     bid_id = Column(Integer, ForeignKey("bids.id"))
     amount = Column(Float, nullable=False)
 
+class BidHistory(Base):
+    __tablename__ = "bid_history"
+    id = Column(Integer, primary_key=True, index=True)
+    auction_id = Column(Integer, ForeignKey("auctions.id"))
+    buyer_id = Column(Integer, ForeignKey("buyers.id"))
+    bid_amount = Column(Float, nullable=False)
+    status = Column(String(50), default="Valid")
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
 # 6. Escrow & Wallet Module
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -232,4 +241,4 @@ class Admin(Base):
     __tablename__ = "admins"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
-    permission_level = Column(Integer, default=1) # 1=Basic, 2=Superadmin
+    role_type = Column(String(50), default="ops_admin") # super_admin, ops_admin, finance_admin

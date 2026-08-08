@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
-from routers import auth, auctions, bids, wallet, shipping, admin, seller, escrow
+from routers import auth, auctions, bids, wallet, shipping, admin, admin_users, admin_auctions, admin_finance, seller, escrow
 
 app = FastAPI(title="ChronoBid Core Backend API")
 
@@ -27,6 +27,9 @@ app.include_router(bids.router)
 app.include_router(wallet.router)
 app.include_router(shipping.router)
 app.include_router(admin.router)
+app.include_router(admin_users.router)
+app.include_router(admin_auctions.router)
+app.include_router(admin_finance.router)
 app.include_router(seller.router)
 app.include_router(escrow.router)
 
