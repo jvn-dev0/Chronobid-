@@ -5,6 +5,10 @@ import { Eye, ShieldAlert, CheckCircle2, ShieldX, Bot, ScanFace, Image as ImageI
 
 export default function AIVerificationPage() {
   const [reports, setReports] = useState<any[]>([]);
+  const [totalScans, setTotalScans] = useState(0);
+  const [autoApproved, setAutoApproved] = useState(0);
+  const [manualReviews, setManualReviews] = useState(0);
+  const [counterfeits, setCounterfeits] = useState(0);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -42,6 +46,8 @@ export default function AIVerificationPage() {
       
       if (res.ok) {
         setReports(reports.filter(r => r.id !== auctionId));
+        setTotalScans(prev => prev + 1);
+        setManualReviews(prev => prev + 1);
         alert('Auction approved and is now Live!');
       } else {
         alert('Failed to approve auction');
@@ -68,7 +74,7 @@ export default function AIVerificationPage() {
               <Bot size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>1,284</div>
+          <div className={styles.kpiValue}>{totalScans}</div>
         </div>
 
         <div className={styles.kpiCard}>
@@ -78,7 +84,7 @@ export default function AIVerificationPage() {
               <CheckCircle2 size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>89%</div>
+          <div className={styles.kpiValue}>{autoApproved}%</div>
         </div>
 
         <div className={styles.kpiCard}>
@@ -88,7 +94,7 @@ export default function AIVerificationPage() {
               <Eye size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>142</div>
+          <div className={styles.kpiValue}>{manualReviews}</div>
         </div>
 
         <div className={styles.kpiCard}>
@@ -98,7 +104,7 @@ export default function AIVerificationPage() {
               <ShieldAlert size={20} />
             </div>
           </div>
-          <div className={styles.kpiValue}>38</div>
+          <div className={styles.kpiValue}>{counterfeits}</div>
         </div>
       </div>
 
