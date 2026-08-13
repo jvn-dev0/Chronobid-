@@ -45,6 +45,7 @@ class AuctionResponse(BaseModel):
     start_time: datetime
     end_time: datetime
     ai_data: Optional[dict] = None
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True

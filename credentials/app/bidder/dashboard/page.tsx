@@ -21,8 +21,30 @@ export default function BidderDashboard() {
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [profile, setProfile] = useState<{first_name?: string, last_name?: string}>({});
+  const [profile, setProfile] = useState<{first_name?: string, last_name?: string, id?: number}>({});
   const [wallet, setWallet] = useState<{balance: number, locked_balance: number}>({balance: 0, locked_balance: 0});
+  const [jasperInput, setJasperInput] = useState('');
+  const [jasperReply, setJasperReply] = useState('');
+  const [isJasperLoading, setIsJasperLoading] = useState(false);
+
+  const askJasper = async () => {
+    if (!jasperInput.trim()) return;
+    setIsJasperLoading(true);
+    setJasperReply('');
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: jasperInput, user_role: 'bidder', user_id: profile.id || 1 })
+      });
+      const data = await res.json();
+      setJasperReply(data.answer);
+      setJasperInput('');
+    } catch (e) {
+      setJasperReply("Sorry, Jasper is offline.");
+    }
+    setIsJasperLoading(false);
+  };
 
   useEffect(() => {
     fetchData();
@@ -86,7 +108,7 @@ export default function BidderDashboard() {
             </div>
             <div className={s.statInfo}>
               <span className={s.statLabel}>Active Bids</span>
-              <span className={s.statValue}>7</span>
+              <span className={s.statValue}>0</span>
               <Link href="/bidder/my-bids" className={s.statLink}>View My Bids &rarr;</Link>
             </div>
           </div>
@@ -96,7 +118,7 @@ export default function BidderDashboard() {
             </div>
             <div className={s.statInfo}>
               <span className={s.statLabel}>Watching</span>
-              <span className={s.statValue}>5</span>
+              <span className={s.statValue}>0</span>
               <Link href="/bidder/watchlist" className={s.statLink}>View Watchlist &rarr;</Link>
             </div>
           </div>
@@ -106,7 +128,7 @@ export default function BidderDashboard() {
             </div>
             <div className={s.statInfo}>
               <span className={s.statLabel}>Won Auctions</span>
-              <span className={s.statValue}>2</span>
+              <span className={s.statValue}>0</span>
               <Link href="/bidder/won" className={s.statLink}>View Won &rarr;</Link>
             </div>
           </div>
@@ -160,43 +182,9 @@ export default function BidderDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {/* Mock Watchlist Data */}
                 <tr>
-                  <td>
-                    <div className={s.watchItem}>
-                      <div className={s.watchImg}></div>
-                      <span className={s.watchTitle}>Ancient Roman Gold Coin</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={s.watchPrice}>$46,000</div>
-                    <div className={s.watchBids}>8 Bids</div>
-                  </td>
-                  <td className={s.watchEnds}>2h 20m</td>
-                  <td>
-                    <div className={s.watchActions}>
-                      <button className={s.actionBtn}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                      <button className={s.actionBtn}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <div className={s.watchItem}>
-                      <div className={s.watchImg}></div>
-                      <span className={s.watchTitle}>Chinese Ming Dynasty Vase</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={s.watchPrice}>$105,000</div>
-                    <div className={s.watchBids}>14 Bids</div>
-                  </td>
-                  <td className={s.watchEnds}>5h 10m</td>
-                  <td>
-                    <div className={s.watchActions}>
-                      <button className={s.actionBtn}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                      <button className={s.actionBtn}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                    </div>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem 1rem', color: '#8c9baf' }}>
+                    No items in your watchlist yet.
                   </td>
                 </tr>
               </tbody>
@@ -210,28 +198,8 @@ export default function BidderDashboard() {
               <Link href="/bidder/activity" className={s.viewAll}>View All &rarr;</Link>
             </div>
             
-            <div className={s.activityList}>
-              <div className={s.activityItem}>
-                <div className={`${s.activityIcon} ${s.iconGreen}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
-                <div>
-                  <div className={s.activityText}>You placed a bid of $125,000 on <strong>Vintage Patek Philippe Watch</strong></div>
-                  <div className={s.activityTime}>2 minutes ago</div>
-                </div>
-              </div>
-              <div className={s.activityItem}>
-                <div className={`${s.activityIcon} ${s.iconBlue}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-                <div>
-                  <div className={s.activityText}>You are watching <strong>19th Century Oil Painting</strong></div>
-                  <div className={s.activityTime}>15 minutes ago</div>
-                </div>
-              </div>
-              <div className={s.activityItem}>
-                <div className={`${s.activityIcon} ${s.iconYellow}`}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-                <div>
-                  <div className={s.activityText}>Auction ending soon: <strong>Antique Victorian Diamond Necklace</strong></div>
-                  <div className={s.activityTime}>1 hour ago</div>
-                </div>
-              </div>
+            <div className={s.activityList} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', color: '#8c9baf' }}>
+              No recent activity to show.
             </div>
           </div>
         </div>
@@ -263,12 +231,19 @@ export default function BidderDashboard() {
               <div className={s.aiStatus}>Online</div>
             </div>
           </div>
-          <div className={s.aiMessage}>
-            Hi {profile.first_name || 'there'}! I can help you find rare items, track auctions, or give bidding advice.
+          <div className={s.aiMessage} style={{ whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+            {jasperReply || `Hi ${profile.first_name || 'there'}! I can help you find rare items, track auctions, or give bidding advice.`}
+            {isJasperLoading && <div style={{marginTop: 5, color: '#eab308'}}>Thinking...</div>}
           </div>
           <div className={s.aiInput}>
-            <input type="text" placeholder="Ask Jasper anything..." />
-            <button className={s.aiSend}>
+            <input 
+              type="text" 
+              placeholder="Ask Jasper anything..." 
+              value={jasperInput}
+              onChange={(e) => setJasperInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && askJasper()}
+            />
+            <button className={s.aiSend} onClick={askJasper}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
@@ -280,27 +255,8 @@ export default function BidderDashboard() {
             <div className={s.sectionTitle}>Recommended</div>
             <Link href="/bidder/recommended" className={s.viewAll}>View All &rarr;</Link>
           </div>
-          <div className={s.recommendedGrid}>
-            <div className={s.recCard}>
-              <div className={s.recImg}>
-                <div className={s.recHeart}><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-              </div>
-              <div className={s.recInfo}>
-                <div className={s.recTitle}>Bronze Horse Sculpture</div>
-                <div className={s.recPrice}>$68,000</div>
-                <div className={s.recEnds}>2h 35m left</div>
-              </div>
-            </div>
-            <div className={s.recCard}>
-              <div className={s.recImg}>
-                <div className={s.recHeart}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-              </div>
-              <div className={s.recInfo}>
-                <div className={s.recTitle}>Vintage Gramophone</div>
-                <div className={s.recPrice}>$24,500</div>
-                <div className={s.recEnds}>1d 4h left</div>
-              </div>
-            </div>
+          <div className={s.recommendedGrid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', color: '#8c9baf' }}>
+            No recommendations available yet.
           </div>
         </div>
 

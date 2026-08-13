@@ -35,8 +35,9 @@ async def create_auction(
         raise HTTPException(status_code=403, detail="Only registered sellers can create auctions")
 
     # 1. Save the uploaded file locally
-    os.makedirs("uploads", exist_ok=True)
-    file_location = f"uploads/{file.filename}"
+    uploads_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads'))
+    os.makedirs(uploads_dir, exist_ok=True)
+    file_location = os.path.join(uploads_dir, file.filename)
     with open(file_location, "wb+") as file_object:
         shutil.copyfileobj(file.file, file_object)
 
@@ -73,7 +74,7 @@ async def create_auction(
         start_time=dt_start,
         end_time=dt_end,
         reserve_price=reserve_price,
-        status="Live" # Mark Live since AI verified it
+        status="Pending_Verification" # Mark Pending for admin review even if AI verified
     )
     db.add(new_auction)
     db.commit()
@@ -87,6 +88,16 @@ async def create_auction(
         material=material or ai_data.get("predicted_material") # Optionally use AI prediction
     )
     db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    
+    # 5. Create the Auction Image Record
+    new_image = models.AuctionImage(
+        item_id=new_item.id,
+        image_url=f"/uploads/{file.filename}",
+        is_primary=True
+    )
+    db.add(new_image)
     db.commit()
     
     # Attach AI data to response

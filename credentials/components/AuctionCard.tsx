@@ -14,11 +14,13 @@ interface Auction {
 }
 
 export default function AuctionCard({ auction }: { auction: Auction }) {
-  // Simple time left calculation
   const timeLeft = new Date(auction.end_time).getTime() - new Date().getTime();
-  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const isEndingSoon = days === 0 && hours < 24;
+  const isEnded = timeLeft <= 0;
+  
+  // Only calculate days/hours if not ended
+  const days = isEnded ? 0 : Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = isEnded ? 0 : Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const isEndingSoon = !isEnded && days === 0 && hours < 24;
 
   const currentPrice = auction.current_highest_bid || auction.reserve_price || 0;
 
@@ -51,13 +53,15 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
           <div>
-            <div style={{ fontSize: '0.75rem', color: '#8c9baf', marginBottom: '2px' }}>Current Bid</div>
+            <div style={{ fontSize: '0.75rem', color: '#8c9baf', marginBottom: '2px' }}>
+              {auction.current_highest_bid ? 'Current Bid' : 'Base Price'}
+            </div>
             <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#eab308' }}>${currentPrice.toLocaleString()}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '0.75rem', color: '#8c9baf', marginBottom: '2px' }}>Time Left</div>
-            <div style={{ fontSize: '0.9rem', color: isEndingSoon ? '#f85149' : '#fff' }}>
-              {days > 0 ? `${days}d ${hours}h` : `${hours}h remaining`}
+            <div style={{ fontSize: '0.9rem', color: isEndingSoon || isEnded ? '#f85149' : '#fff' }}>
+              {isEnded ? 'Ended' : (days > 0 ? `${days}d ${hours}h` : `${hours}h remaining`)}
             </div>
           </div>
         </div>
@@ -66,15 +70,16 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
           display: 'block',
           width: '100%',
           padding: '0.75rem',
-          background: '#4fc08d',
-          color: '#fff',
+          background: isEnded ? '#30363d' : '#4fc08d',
+          color: isEnded ? '#8c9baf' : '#fff',
           textAlign: 'center',
           textDecoration: 'none',
           borderRadius: '6px',
           fontWeight: 'bold',
-          transition: 'background 0.2s'
+          transition: 'background 0.2s',
+          pointerEvents: isEnded ? 'none' : 'auto'
         }}>
-          Place Bid
+          {isEnded ? 'Auction Closed' : 'Place Bid'}
         </Link>
       </div>
     </div>

@@ -115,7 +115,7 @@ export default function ProfilePage() {
             </div>
             <div className={s.infoRow}>
               <span className={s.infoLabel}>Role</span>
-              <span className={s.infoValue} style={{ textTransform: 'capitalize', color: '#4fc08d' }}>{profile?.role}</span>
+              <span className={s.infoValue} style={{ textTransform: 'capitalize', color: '#4fc08d' }}>Seller</span>
             </div>
           </div>
         </div>

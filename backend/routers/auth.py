@@ -155,10 +155,15 @@ def google_login(login_data: schemas.GoogleLogin, db: Session = Depends(get_db))
 def get_my_profile(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     """ Secure endpoint to get logged in user's profile info """
     role = "guest"
-    if db.query(models.Buyer).filter(models.Buyer.user_id == current_user.id).first():
-        role = "buyer"
-    elif db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first():
+    phone = current_user.phone
+
+    seller_profile = db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first()
+    if seller_profile:
         role = "seller"
+        if seller_profile.phone_number:
+            phone = seller_profile.phone_number
+    elif db.query(models.Buyer).filter(models.Buyer.user_id == current_user.id).first():
+        role = "buyer"
 
     return {
         "id": current_user.id,
@@ -166,6 +171,6 @@ def get_my_profile(current_user: models.User = Depends(get_current_user), db: Se
         "email": current_user.email,
         "first_name": current_user.first_name,
         "last_name": current_user.last_name,
-        "phone": current_user.phone,
+        "phone": phone,
         "role": role
     }

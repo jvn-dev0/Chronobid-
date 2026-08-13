@@ -116,6 +116,14 @@ class Auction(Base):
     item = relationship("AuctionItem", back_populates="auction", uselist=False)
     bids = relationship("Bid", back_populates="auction")
 
+    @property
+    def image_url(self):
+        if self.item and self.item.images:
+            # Get the primary image or the first one
+            primary = next((img.image_url for img in self.item.images if img.is_primary), None)
+            return primary or self.item.images[0].image_url
+        return None
+
 class AuctionItem(Base):
     __tablename__ = "auction_items"
     id = Column(Integer, primary_key=True, index=True)

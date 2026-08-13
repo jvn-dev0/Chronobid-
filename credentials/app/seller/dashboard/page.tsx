@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Logo from '../../../components/Logo';
 import styles from './dashboard.module.css';
-import { clearSession } from '../../../lib/api';
+import { clearSession, getToken } from '../../../lib/api';
 
 const FAQS = [
   { icon: '➕', text: 'How do I add my first item?' },
@@ -21,6 +21,7 @@ export default function SellerDashboard() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const historyRef = useRef<HTMLDivElement>(null);
+  const [stats, setStats] = useState<any>(null);
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -31,6 +32,25 @@ export default function SellerDashboard() {
   useEffect(() => {
     historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const token = getToken();
+        if (!token) return;
+        const res = await fetch('http://localhost:8000/api/seller/dashboard', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+      }
+    };
+    fetchDashboard();
+  }, []);
 
   const send = async (text: string) => {
     if (!text.trim()) return;
@@ -91,30 +111,41 @@ export default function SellerDashboard() {
         </div>
       </header>
 
-      {/* ══════════ HERO ══════════ */}
+      {/* ══════════ HERO / DASHBOARD ══════════ */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroContent}>
-            <span className={styles.heroBadge}>✦ Trusted by 12,000+ Collectors Worldwide</span>
+            <span className={styles.heroBadge}>
+              {stats?.seller ? `✦ Welcome back, ${stats.seller.first_name}` : '✦ Trusted by 12,000+ Collectors Worldwide'}
+            </span>
             <h1 className={styles.heroHeading}>
-              Sell Your
-              <span className={styles.heroAccent}>Rare Treasures</span>
-              With Confidence
+              {stats?.seller ? 'Manage Your ' : 'Sell Your '}
+              <span className={styles.heroAccent}>{stats?.seller ? 'Auctions' : 'Rare Treasures'}</span>
+              {stats?.seller ? ' Here' : ' With Confidence'}
             </h1>
             <p className={styles.heroSub}>
-              ChronoBid connects expert sellers with passionate collectors.<br/>
-              List your extraordinary items and reach the world's most serious buyers.
+              {stats?.seller ? `Shop: ${stats.seller.shop_name || 'My Store'} | Status: ${stats.seller.verification_status}` : `ChronoBid connects expert sellers with passionate collectors.\nList your extraordinary items and reach the world's most serious buyers.`}
             </p>
             <div className={styles.heroActions}>
-              <Link href="/seller/sell"><button className={styles.heroCta}>Start Selling Today</button></Link>
-              <a href="#how" className={styles.heroGhost}>See How It Works ↓</a>
+              <Link href="/seller/sell"><button className={styles.heroCta}>{stats?.seller ? 'Create New Listing' : 'Start Selling Today'}</button></Link>
+              {!stats?.seller && <a href="#how" className={styles.heroGhost}>See How It Works ↓</a>}
             </div>
+            
             <div className={styles.heroStats}>
-              <div className={styles.stat}><strong>12K+</strong><span>Active Buyers</span></div>
+              <div className={styles.stat}>
+                <strong>{stats?.metrics?.active_auctions ?? '12K+'}</strong>
+                <span>{stats?.metrics ? 'Active Auctions' : 'Active Buyers'}</span>
+              </div>
               <div className={styles.statDiv}/>
-              <div className={styles.stat}><strong>98%</strong><span>Seller Satisfaction</span></div>
+              <div className={styles.stat}>
+                <strong>{stats?.metrics?.total_bids ?? '98%'}</strong>
+                <span>{stats?.metrics ? 'Total Bids Received' : 'Seller Satisfaction'}</span>
+              </div>
               <div className={styles.statDiv}/>
-              <div className={styles.stat}><strong>$4.2M</strong><span>Sold Last Month</span></div>
+              <div className={styles.stat}>
+                <strong>{stats?.metrics ? `$${stats.metrics.total_earnings.toLocaleString()}` : '$4.2M'}</strong>
+                <span>{stats?.metrics ? 'Total Earnings' : 'Sold Last Month'}</span>
+              </div>
             </div>
           </div>
           <div className={styles.heroImgWrap}>
@@ -122,7 +153,7 @@ export default function SellerDashboard() {
               <img src="/antiques.jpg" alt="Rare antiques" className={styles.heroImg} />
               <div className={styles.heroImgBadge}>
                 <span className={styles.liveDot}/>
-                Live Auctions Now
+                {stats?.metrics ? `${stats.metrics.pending_approval} Pending Approvals` : 'Live Auctions Now'}
               </div>
             </div>
           </div>
@@ -130,6 +161,7 @@ export default function SellerDashboard() {
       </section>
 
       {/* ══════════ TRUST STRIP ══════════ */}
+      {!stats?.seller && (
       <div className={styles.trustStrip}>
         {['AI-Verified Items','Secure Escrow','Global Reach','Expert Support','Free Listings'].map(t => (
           <div key={t} className={styles.trustItem}>
@@ -138,8 +170,10 @@ export default function SellerDashboard() {
           </div>
         ))}
       </div>
+      )}
 
       {/* ══════════ HOW IT WORKS ══════════ */}
+      {!stats?.seller && (
       <section id="how" className={styles.howSection}>
         <div className={styles.sectionLabel}>Simple Process</div>
         <h2 className={styles.sectionTitle}>How It Works</h2>
@@ -177,6 +211,7 @@ export default function SellerDashboard() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* ══════════ FLOATING JASPER ══════════ */}
       <div className={styles.floatWrap}>

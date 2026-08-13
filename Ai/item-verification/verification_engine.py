@@ -40,8 +40,11 @@ class VerificationEngine:
                 img = Image.open(item['image_path']).convert("RGB")
                 inputs = self.processor(images=img, return_tensors="pt")
                 with torch.no_grad():
-                    img_features = self.model.get_image_features(**inputs)
-                self.embeddings.append(img_features.numpy().flatten())
+                    out = self.model.get_image_features(**inputs)
+                    img_features = getattr(out, 'pooler_output', getattr(out, 'image_embeds', out))
+                    if hasattr(img_features, 'detach'): img_features = img_features.detach().cpu().numpy()
+                    elif hasattr(img_features, 'numpy'): img_features = img_features.numpy()
+                self.embeddings.append(img_features.flatten())
                 valid_metadata.append(item)
             except Exception as e:
                 print(f"Skipping {item['image_path']}: {e}")
@@ -76,7 +79,10 @@ class VerificationEngine:
             
         inputs = self.processor(images=image, return_tensors="pt")
         with torch.no_grad():
-            img_features = self.model.get_image_features(**inputs).numpy()
+            out = self.model.get_image_features(**inputs)
+            img_features = getattr(out, 'pooler_output', getattr(out, 'image_embeds', out))
+            if hasattr(img_features, 'detach'): img_features = img_features.detach().cpu().numpy()
+            elif hasattr(img_features, 'numpy'): img_features = img_features.numpy()
             
         # Calculate cosine similarity between uploaded image and all museum images
         similarities = cosine_similarity(img_features, self.embeddings).flatten()

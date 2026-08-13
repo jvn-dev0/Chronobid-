@@ -286,6 +286,9 @@ export default function SellerApplicationPage() {
       } else {
         const data = await res.json();
         alert('Error: ' + data.detail);
+        if (data.detail && data.detail.includes('Pending_Review')) {
+          router.push('/seller/dashboard');
+        }
         setLoading(false);
       }
     } catch {

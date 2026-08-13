@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { Eye, ShieldAlert, CheckCircle2, ShieldX, Bot, ScanFace, Image as ImageIcon } from 'lucide-react';
 
@@ -9,8 +9,8 @@ export default function AIVerificationPage() {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:8000/api/admin/auctions/ai-reports', {
+        const token = localStorage.getItem('chronobid_token');
+        const res = await fetch('http://localhost:8000/api/admin/pending-auctions', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -18,11 +18,38 @@ export default function AIVerificationPage() {
           setReports(data);
         }
       } catch (err) {
-        console.error("Failed to fetch AI reports", err);
+        console.error("Failed to fetch pending auctions", err);
       }
     };
     fetchReports();
   }, []);
+
+  const handleApprove = async (auctionId: number) => {
+    try {
+      const token = localStorage.getItem('chronobid_token');
+      const res = await fetch('http://localhost:8000/api/admin/approve-auction', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({
+          auction_id: auctionId,
+          action: 'Approve',
+          comments: 'Approved via Dashboard'
+        })
+      });
+      
+      if (res.ok) {
+        setReports(reports.filter(r => r.id !== auctionId));
+        alert('Auction approved and is now Live!');
+      } else {
+        alert('Failed to approve auction');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <>
@@ -75,65 +102,49 @@ export default function AIVerificationPage() {
         </div>
       </div>
 
-      <div className={styles.tableContainer}>
-        <div className={styles.tableHeader}>
-          <h3 className={styles.tableTitle}>Recent AI Reports</h3>
-          <div className={styles.tableActions}>
-            <button className={styles.secondaryButton}>Filter by Risk</button>
-          </div>
-        </div>
-        <table className={styles.dataTable}>
-          <thead>
-            <tr>
-              <th>Report ID</th>
-              <th>Scan Type</th>
-              <th>Target</th>
-              <th>Primary Score</th>
-              <th>Secondary Score</th>
-              <th>Risk Level</th>
-              <th>AI Decision</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map((report) => (
-              <tr key={report.id}>
-                <td style={{fontWeight: '500', color: '#6b7280'}}>{report.id}</td>
-                <td>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                    {report.type === 'Identity' ? <ScanFace size={16} color="#6b7280" /> : <ImageIcon size={16} color="#6b7280" />}
-                    {report.type}
+      <div className={styles.tableContainer} style={{ padding: '24px' }}>
+        <h3 className={styles.tableTitle} style={{ marginBottom: '20px' }}>Pending Auction Verifications</h3>
+        
+        {reports.length === 0 ? (
+          <div style={{ color: '#8c9baf', padding: '40px 0', textAlign: 'center' }}>No pending verifications.</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+            {reports.map((item) => (
+              <div key={item.id} style={{ backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden' }}>
+                <div style={{ height: '200px', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <ImageIcon size={40} color="#475569" />
+                  )}
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', backgroundColor: '#eab308', color: '#000', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                    Pending
                   </div>
-                </td>
-                <td style={{fontWeight: '600'}}>{report.target}</td>
-                <td>{report.ocrConfidence}%</td>
-                <td>{report.faceMatch}%</td>
-                <td>
-                  <span className={`${styles.statusBadge} ${
-                    report.risk === 'Low' ? styles.statusActive : 
-                    report.risk === 'Medium' ? styles.statusPending : styles.statusSuspended
-                  }`}>
-                    {report.risk}
-                  </span>
-                </td>
-                <td>{report.status}</td>
-                <td>{report.date}</td>
-                <td>
-                  <div className={styles.actionMenu}>
-                    <button className={styles.iconAction} title="View Full Report"><Eye size={16} /></button>
-                    {report.status !== 'Passed' && (
-                      <button className={styles.iconAction} style={{color: '#10b981'}} title="Override & Approve"><CheckCircle2 size={16} /></button>
-                    )}
-                    {report.status !== 'Flagged' && (
-                      <button className={`${styles.iconAction} ${styles.danger}`} title="Override & Reject"><ShieldX size={16} /></button>
-                    )}
+                </div>
+                <div style={{ padding: '20px' }}>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#f8fafc', marginBottom: '8px' }}>{item.title}</h4>
+                  <div style={{ fontSize: '1.25rem', color: '#10b981', fontWeight: 700, marginBottom: '16px' }}>${item.reserve_price?.toLocaleString()}</div>
+                  <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '20px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {item.description}
+                  </p>
+                  
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                      onClick={() => handleApprove(item.id)}
+                      style={{ flex: 1, backgroundColor: '#10b981', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      <CheckCircle2 size={18} />
+                      Proceed
+                    </button>
+                    <button style={{ backgroundColor: '#334155', color: '#f8fafc', border: 'none', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer' }}>
+                      <ShieldX size={18} />
+                    </button>
                   </div>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
     </>
   );
