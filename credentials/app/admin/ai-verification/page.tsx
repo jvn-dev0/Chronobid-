@@ -119,7 +119,11 @@ export default function AIVerificationPage() {
               <div key={item.id} style={{ backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden' }}>
                 <div style={{ height: '200px', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                   {item.image_url ? (
-                    <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img 
+                      src={item.image_url.startsWith('http') ? item.image_url : `http://localhost:8000${item.image_url}`} 
+                      alt={item.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
                   ) : (
                     <ImageIcon size={40} color="#475569" />
                   )}

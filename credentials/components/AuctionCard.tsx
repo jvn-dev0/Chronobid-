@@ -36,7 +36,11 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
     }}>
       <div style={{ height: '200px', background: '#21262d', position: 'relative' }}>
         {auction.image_url ? (
-          <img src={`http://localhost:8000${auction.image_url}`} alt={auction.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img 
+            src={auction.image_url.startsWith('http') ? auction.image_url : `http://localhost:8000${auction.image_url}`} 
+            alt={auction.title} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+          />
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8c9baf' }}>No Image Available</div>
         )}
