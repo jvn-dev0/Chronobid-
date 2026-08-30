@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { Eye, CheckCircle2, XCircle, Clock, PlayCircle, StopCircle, Award } from 'lucide-react';
 
@@ -9,7 +9,7 @@ export default function AuctionsPage() {
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('chronobid_token') || localStorage.getItem('token');
         const res = await fetch('http://localhost:8000/api/admin/auctions/', {
           headers: { 'Authorization': `Bearer ${token}` }
         });

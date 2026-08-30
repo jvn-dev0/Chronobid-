@@ -32,13 +32,13 @@ export default function SellerApplicationPage() {
   // Form State
   const [form, setForm] = useState({
     // Step 3
-    dob: '', gender: '', nationality: '', country: '', state: '', city: '', street_address: '', landmark: '', postal_code: '',
+    dob: '1990-01-01', gender: 'Male', nationality: 'American', country: 'USA', state: 'New York', city: 'New York City', street_address: '123 Wall St', landmark: 'Near the bull', postal_code: '10005',
     // Step 4
-    id_document_type: '', id_document_number: '', id_expiry_date: '', id_document_url: '', selfie_url: '',
+    id_document_type: 'Passport', id_document_number: 'A123456789', id_expiry_date: '2030-01-01', id_document_url: '', selfie_url: '',
     // Step 5
-    phone_number: '', phone_verified: false,
+    phone_number: '+1 555-019-8372', phone_verified: false,
     // Step 6
-    bank_account_name: '', bank_name: '', bank_account_number: '', bank_ifsc: '', bank_branch_name: '', bank_account_type: 'Savings Account'
+    bank_account_name: 'John Doe', bank_name: 'Chase Bank', bank_account_number: '1234567890', bank_ifsc: 'CHASUS33', bank_branch_name: 'Manhattan', bank_account_type: 'Savings Account'
   });
 
   // Contact Verify State

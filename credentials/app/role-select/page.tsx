@@ -7,13 +7,29 @@ import Logo from '../../components/Logo';
 export default function RoleSelectPage() {
   const router = useRouter();
 
-  // In a real app, this would update the user's role in the DB
-  const handleSelectRole = (role: 'buyer' | 'seller') => {
-    // For now, just navigate to their respective dashboard
+  const handleSelectRole = async (role: 'buyer' | 'seller') => {
     if (role === 'buyer') {
       router.push('/bidder/dashboard');
     } else {
-      router.push('/seller/application');
+      // Check if the seller is already verified
+      const token = localStorage.getItem('chronobid_token');
+      if (token) {
+        try {
+          const res = await fetch('http://localhost:8000/api/auth/me', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (data.is_verified) {
+            router.push('/seller/dashboard');
+          } else {
+            router.push('/seller/application');
+          }
+        } catch (err) {
+          router.push('/seller/application');
+        }
+      } else {
+        router.push('/seller/application');
+      }
     }
   };
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text, Enum
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text, Enum, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -133,6 +133,7 @@ class AuctionItem(Base):
     material = Column(String(100))
     ai_authenticity_score = Column(Float)
     ai_estimated_price = Column(Float)
+    ai_data = Column(JSON, nullable=True)
     
     auction = relationship("Auction", back_populates="item")
     images = relationship("AuctionImage", back_populates="item")

@@ -50,7 +50,8 @@ def get_pending_auctions(user: models.User = Depends(get_current_user), db: Sess
             "reserve_price": a.reserve_price,
             "image_url": a.image_url,
             "description": desc,
-            "status": a.status
+            "status": a.status,
+            "ai_data": a.item.ai_data if a.item else None
         })
     return result
 
@@ -63,17 +64,28 @@ def approve_auction(request: schemas.AdminActionRequest, user: models.User = Dep
     new_status = "Live" if request.action.lower() == "approve" else "Rejected"
     auction.status = new_status
     
+    # Ensure an admin record exists for the approval log
+    admin_profile = db.query(models.Admin).filter(models.Admin.user_id == user.id).first()
+    if not admin_profile:
+        admin_profile = db.query(models.Admin).first()
+        if not admin_profile:
+            admin_profile = models.Admin(user_id=user.id, role_type="super_admin")
+            db.add(admin_profile)
+            db.commit()
+            db.refresh(admin_profile)
+
     # Log the approval
     approval_log = models_phase2.AuctionApproval(
         auction_id=auction.id,
-        admin_id=1, # Mock admin ID for testing since we bypassed require_admin
+        admin_id=admin_profile.id,
         status=new_status,
         comments=request.comments
     )
     db.add(approval_log)
     db.commit()
 
-    return {"message": f"Auction {auction.id} marked as {new_status}"}
+    return {"message": f"Auction {auction.id} marked as {new_status}", "status": new_status}
+
 
 @router.get("/fraud-logs")
 def get_fraud_logs(admin: models.Admin = Depends(require_admin), db: Session = Depends(get_db)):

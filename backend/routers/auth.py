@@ -157,9 +157,12 @@ def get_my_profile(current_user: models.User = Depends(get_current_user), db: Se
     role = "guest"
     phone = current_user.phone
 
+    seller_verified = False
     seller_profile = db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first()
     if seller_profile:
         role = "seller"
+        s_status = getattr(seller_profile, 'verification_status', None) or getattr(seller_profile, 'verified_status', None)
+        seller_verified = s_status in ['Verified', 'Approved']
         if seller_profile.phone_number:
             phone = seller_profile.phone_number
     elif db.query(models.Buyer).filter(models.Buyer.user_id == current_user.id).first():
@@ -172,5 +175,6 @@ def get_my_profile(current_user: models.User = Depends(get_current_user), db: Se
         "first_name": current_user.first_name,
         "last_name": current_user.last_name,
         "phone": phone,
-        "role": role
+        "role": role,
+        "is_verified": seller_verified
     }

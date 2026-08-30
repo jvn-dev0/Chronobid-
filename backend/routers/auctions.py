@@ -85,7 +85,8 @@ async def create_auction(
         auction_id=new_auction.id,
         description=description,
         condition=condition,
-        material=material or ai_data.get("predicted_material") # Optionally use AI prediction
+        material=material or ai_data.get("predicted_material"), # Optionally use AI prediction
+        ai_data=ai_data
     )
     db.add(new_item)
     db.commit()

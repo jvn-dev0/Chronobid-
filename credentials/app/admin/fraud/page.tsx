@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { AlertTriangle, UserX, Wallet, CheckCircle2, Search, Crosshair } from 'lucide-react';
 
@@ -9,7 +9,7 @@ export default function FraudDetectionPage() {
   useEffect(() => {
     const fetchFraudAlerts = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('chronobid_token') || localStorage.getItem('token');
         const res = await fetch('http://localhost:8000/api/admin/auctions/fraud-alerts', {
           headers: { 'Authorization': `Bearer ${token}` }
         });

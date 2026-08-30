@@ -37,3 +37,4 @@ app.include_router(escrow.router)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to ChronoBid Core Backend API! System is online."}
+
