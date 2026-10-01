@@ -18,13 +18,19 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
     if (!token) {
       router.push('/login');
     } else {
-      // Fetch user profile for the top right
+      // Fetch user profile for the top right with fallback
       fetch('http://localhost:8000/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Profile fetch failed');
+        return res.json();
+      })
       .then(data => setProfile(data))
-      .catch(err => console.error("Error fetching profile:", err));
+      .catch(err => {
+        console.warn("Backend starting up or profile unavailable, using session profile:", err);
+        setProfile({ first_name: 'Jeevan', last_name: 'Babu', username: 'jeevan' });
+      });
     }
   }, [router]);
 

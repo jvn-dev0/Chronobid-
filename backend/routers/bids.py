@@ -60,6 +60,14 @@ def place_bid(
     )
     db.add(bid_history)
 
+    # Create Notification for Bidder
+    bid_notif = models.Notification(
+        user_id=current_user.id,
+        message=f"Bid Placed: Your bid of ${bid_data.bid_amount:,.2f} on '{auction.title}' was confirmed. ${bid_data.bid_amount:,.2f} is reserved in escrow.",
+        is_read=False
+    )
+    db.add(bid_notif)
+
     db.commit()
     db.refresh(new_bid)
     

@@ -61,6 +61,7 @@ class Seller(Base):
     shop_name = Column(String(100))
     shop_description = Column(Text)
     verification_status = Column(String(50), default="Pending") # Pending, Pending_Review, Approved, Rejected
+    onboarding_step = Column(Integer, default=3) # Step 3, 4, 5, 6, 7 or Completed
     trust_score = Column(Float, default=50.0)
     
     # --- Application Fields (Step 3 & 4) ---
@@ -79,9 +80,20 @@ class Seller(Base):
     id_document_url = Column(String(500))
     selfie_url = Column(String(500))
     
+    # --- Verification Audit Metadata ---
+    extracted_name = Column(String(200))
+    extracted_dob = Column(String(50))
+    extracted_doc_number = Column(String(100))
+    face_match_score = Column(Float)
+    face_match_status = Column(String(50)) # Verified, Failed, Pending
+    ocr_status = Column(String(50))        # Success, Failed, Partial
+    verification_reason = Column(Text)
+    verified_at = Column(DateTime(timezone=True))
+    
     # --- Contact Verification (Step 5) ---
     phone_number = Column(String(50))
     phone_verified = Column(Boolean, default=False)
+    phone_verified_at = Column(DateTime(timezone=True), nullable=True)
     
     # --- Bank Information (Step 6) ---
     bank_account_name = Column(String(150))
@@ -90,6 +102,8 @@ class Seller(Base):
     bank_ifsc = Column(String(50))
     bank_branch_name = Column(String(100))
     bank_account_type = Column(String(50))
+    bank_verified = Column(Boolean, default=False)
+    bank_verified_at = Column(DateTime(timezone=True), nullable=True)
     
     user = relationship("User", back_populates="seller_profile")
     auctions = relationship("Auction", back_populates="seller")

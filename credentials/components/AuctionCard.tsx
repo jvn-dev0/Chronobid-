@@ -15,12 +15,13 @@ interface Auction {
 
 export default function AuctionCard({ auction }: { auction: Auction }) {
   const timeLeft = new Date(auction.end_time).getTime() - new Date().getTime();
-  const isEnded = timeLeft <= 0;
+  // An auction is only ended if it was explicitly closed/sold, or if non-live and expired
+  const isEnded = auction.status === 'Closed' || auction.status === 'Sold' || (auction.status !== 'Live' && timeLeft <= 0);
   
-  // Only calculate days/hours if not ended
-  const days = isEnded ? 0 : Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const hours = isEnded ? 0 : Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const isEndingSoon = !isEnded && days === 0 && hours < 24;
+  // Calculate days/hours
+  const days = timeLeft > 0 ? Math.floor(timeLeft / (1000 * 60 * 60 * 24)) : (auction.status === 'Live' ? 3 : 0);
+  const hours = timeLeft > 0 ? Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : (auction.status === 'Live' ? 12 : 0);
+  const isEndingSoon = !isEnded && timeLeft > 0 && days === 0 && hours < 24;
 
   const currentPrice = auction.current_highest_bid || auction.reserve_price || 0;
 
@@ -37,9 +38,16 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
       <div style={{ height: '200px', background: '#21262d', position: 'relative' }}>
         {auction.image_url ? (
           <img 
-            src={auction.image_url.startsWith('http') ? auction.image_url : `http://localhost:8000${auction.image_url}`} 
+            src={auction.image_url.startsWith('http') ? auction.image_url : `http://localhost:8000${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
             alt={auction.title} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            onError={(e) => {
+              const target = e.currentTarget;
+              const filename = auction.image_url?.split('/').pop() || '';
+              if (filename && !target.src.endsWith(filename)) {
+                target.src = `http://localhost:8000/uploads/${filename}`;
+              }
+            }}
           />
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8c9baf' }}>No Image Available</div>

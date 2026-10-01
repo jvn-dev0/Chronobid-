@@ -13,28 +13,28 @@ const services = [
   {
     name: 'Main Backend (Port 8000)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'main:app', '--port', '8000', '--reload'],
+    args: ['-m', 'uvicorn', 'main:app', '--port', '8000'],
     cwd: path.join(__dirname, 'backend'),
     color: '\x1b[32m' // Green
   },
   {
     name: 'Item Verification AI (Port 8001)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'app:app', '--port', '8001', '--reload'],
+    args: ['-m', 'uvicorn', 'app:app', '--port', '8001'],
     cwd: path.join(__dirname, 'Ai', 'item-verification'),
     color: '\x1b[33m' // Yellow
   },
   {
     name: 'Identity Verification AI (Port 8003)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'app:app', '--port', '8003', '--reload'],
+    args: ['-m', 'uvicorn', 'app:app', '--port', '8003'],
     cwd: path.join(__dirname, 'Ai', 'identity-verification'),
     color: '\x1b[35m' // Magenta
   },
   {
     name: 'JasperBot AI (Port 8004)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'app:app', '--port', '8004', '--reload'],
+    args: ['-m', 'uvicorn', 'app:app', '--port', '8004'],
     cwd: path.join(__dirname, 'Ai', 'jasper-bot'),
     color: '\x1b[34m' // Blue
   }
@@ -53,7 +53,8 @@ services.forEach(service => {
   const child = spawn(cmd, service.args, {
     cwd: service.cwd,
     stdio: 'pipe',
-    shell: true // Use shell to handle virtual environments properly
+    shell: true, // Use shell to handle virtual environments properly
+    env: { ...process.env, PYTHONUNBUFFERED: '1' }
   });
 
   child.stdout.on('data', (data) => {
@@ -77,15 +78,16 @@ services.forEach(service => {
   processes.push(child);
 });
 
-// Handle graceful shutdown when pressing Ctrl+C
-process.on('SIGINT', () => {
+// Handle graceful shutdown only when explicitly requested
+process.on('SIGTERM', () => {
   console.log('\n🛑 Shutting down all services...');
   processes.forEach(p => {
     if (process.platform === 'win32') {
-      spawn('taskkill', ['/pid', p.pid, '/f', '/t']);
+      try { spawn('taskkill', ['/pid', p.pid, '/f', '/t']); } catch {}
     } else {
       p.kill('SIGTERM');
     }
   });
   setTimeout(() => process.exit(0), 1000);
 });
+

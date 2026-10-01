@@ -67,7 +67,9 @@ export default function Home() {
       {/* 2. NAVIGATION HEADER */}
       <header className={s.header}>
         <div className={s.headerInner}>
-          <Logo size={34} fontSize={26} />
+          <div className={s.logoWrapper}>
+            <Logo size={56} fontSize={42} />
+          </div>
 
           <nav className={s.navLinks}>
             <a href="#auctions" className={s.navLink}>Live Auctions</a>
@@ -83,108 +85,197 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 3. HERO SECTION (LIGHT LUXURY) */}
+      {/* 3. HERO SECTION (MASSIVE EXPANSIVE CENTERPIECE) */}
       <section className={s.heroSection}>
-        <div className={s.heroGrid}>
-          {/* Left Column: Copy & CTAs */}
-          <div className={s.heroLeft}>
-            <div className={s.heroPill}>
-              <span className={s.pillDot}></span>
-              <span>The Intelligent Auction House</span>
-            </div>
-
-            <h1 className={s.heroTitle}>
-              Where History Meets <span className={s.gradientText}>AI Authenticity.</span>
-            </h1>
-
-            <p className={s.heroSubtitle}>
-              Discover, bid, and collect authenticated historical treasures, vintage horology, and rare untapped inventions — protected by live biometric verification and automated escrow wallets.
-            </p>
-
-            <div className={s.ctaRow}>
-              <Link href="/register" className={s.primaryCta}>
-                Start Bidding Now
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </Link>
-              <Link href="/login" className={s.secondaryCta}>
-                View Live Catalog
-              </Link>
-            </div>
-
-            {/* Trust Badges */}
-            <div className={s.metricsStrip}>
-              <div className={s.metricItem}>
-                <div className={s.metricNumber}>96.4%</div>
-                <div className={s.metricLabel}>AI Verification Accuracy</div>
-              </div>
-              <div className={s.metricDivider}></div>
-              <div className={s.metricItem}>
-                <div className={s.metricNumber}>$100%</div>
-                <div className={s.metricLabel}>Escrow Protection</div>
-              </div>
-              <div className={s.metricDivider}></div>
-              <div className={s.metricItem}>
-                <div className={s.metricNumber}>DeepFace</div>
-                <div className={s.metricLabel}>Biometric Seller KYC</div>
-              </div>
-            </div>
+        <div className={s.heroHeader}>
+          <div className={s.heroPill}>
+            <span className={s.pillDot}></span>
+            <span>🏛️ THE INTELLIGENT AUCTION HOUSE</span>
           </div>
 
-          {/* Right Column: Hero Visual Card with ChronoBid Image */}
-          <div className={s.heroRight}>
-            <div className={s.heroCard}>
-              <div className={s.heroImageWrapper}>
-                <img 
-                  src="/antiques.jpg" 
-                  alt="ChronoBid Vintage Artifacts" 
-                  className={s.heroMainImg}
-                  onError={(e) => {
-                    // Fallback to high-res antique image if local antiques.jpg has issue
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1200&auto=format&fit=crop';
-                  }}
-                />
-                <div className={s.liveBadge}>
-                  <span className={s.livePulse}></span> LIVE AUCTION
+          <h1 className={s.heroTitle}>
+            Where History Meets <span className={s.gradientText}>AI Authenticity.</span>
+          </h1>
+
+          <p className={s.heroSubtitle}>
+            Discover, bid, and collect authenticated historical treasures, vintage horology, and rare untapped inventions — protected by live biometric verification and automated escrow wallets.
+          </p>
+
+          <div className={s.ctaRow}>
+            <Link href="/register" className={s.primaryCta}>
+              Start Bidding Now
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </Link>
+            <Link href="/login" className={s.secondaryCta}>
+              View Live Catalog
+            </Link>
+          </div>
+
+          {/* Key Metrics Strip */}
+          <div className={s.metricsStrip}>
+            <div className={s.metricItem}>
+              <div className={s.metricNumber}>96.4%</div>
+              <div className={s.metricLabel}>AI Verification Accuracy</div>
+            </div>
+            <div className={s.metricDivider}></div>
+            <div className={s.metricItem}>
+              <div className={s.metricNumber}>100%</div>
+              <div className={s.metricLabel}>Escrow Protection</div>
+            </div>
+            <div className={s.metricDivider}></div>
+            <div className={s.metricItem}>
+              <div className={s.metricNumber}>DeepFace</div>
+              <div className={s.metricLabel}>Biometric Seller KYC</div>
+            </div>
+            <div className={s.metricDivider}></div>
+            <div className={s.metricItem}>
+              <div className={s.metricNumber}>CLIP Neural</div>
+              <div className={s.metricLabel}>Met Museum Cross-Reference</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── MASSIVE CENTERPIECE SHOWCASE ELEMENT (EXPANSIVE LUXURY SCALE) ─── */}
+        <div className={s.heroShowcaseWrapper}>
+          <div className={s.showcaseAura}></div>
+          <div className={s.showcaseCard}>
+
+            {/* Top Interactive Search / Valuation Bar */}
+            <div className={s.showcaseSearchBar}>
+              <div className={s.searchIconBox}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </div>
+              <input 
+                type="text" 
+                readOnly 
+                value="Swiss Patek Philippe 18K Gold Chronograph Pocket Watch (c. 1885)" 
+                className={s.searchInput}
+              />
+              <div className={s.searchTag}>
+                <span>✨ Met Museum Match</span>
+              </div>
+              <Link href="/register" className={s.searchActionBtn}>
+                Explore Lot &rarr;
+              </Link>
+            </div>
+
+            {/* Main Showcase Grid (Expansive 2-Column Panorama) */}
+            <div className={s.showcaseGrid}>
+              
+              {/* Left Column: Huge High-Resolution Visual Gallery */}
+              <div className={s.showcaseVisual}>
+                <div className={s.showcaseImgContainer}>
+                  <img 
+                    src="/antiques.jpg" 
+                    alt="ChronoBid Vintage Artifacts" 
+                    className={s.showcaseMainImg}
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1400&auto=format&fit=crop';
+                    }}
+                  />
+                  <div className={s.showcaseLiveBadge}>
+                    <span className={s.livePulse}></span> LIVE AUCTION #8492
+                  </div>
+                  <div className={s.showcaseAiPill}>
+                    <span>✨ 96.4% Met Museum CLIP Match</span>
+                  </div>
+                </div>
+
+                {/* Thumbnails Strip */}
+                <div className={s.showcaseThumbs}>
+                  <div className={`${s.thumb} ${s.activeThumb}`}>
+                    <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=300&auto=format&fit=crop" alt="Front View" />
+                  </div>
+                  <div className={s.thumb}>
+                    <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=300&auto=format&fit=crop" alt="Mechanism View" />
+                  </div>
+                  <div className={s.thumb}>
+                    <img src="https://images.unsplash.com/photo-1605792657660-596af9009e82?q=80&w=300&auto=format&fit=crop" alt="Hallmark View" />
+                  </div>
+                  <div className={s.thumbCount}>
+                    +5 Angles
+                  </div>
                 </div>
               </div>
 
-              <div className={s.heroCardBody}>
-                <div className={s.heroCardTop}>
-                  <div>
-                    <span className={s.heroItemCategory}>Featured Masterpiece</span>
-                    <h3 className={s.heroItemTitle}>Swiss Patek Philippe 18K Gold Pocket Chronograph</h3>
+              {/* Right Column: Comprehensive Live Bidding & Valuation Engine */}
+              <div className={s.showcaseDetails}>
+                <div className={s.showcaseMetaHeader}>
+                  <div className={s.categoryPill}>HOROLOGY &bull; GENEVA c. 1885</div>
+                  <div className={s.verifiedSellerTag}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    <span>Biometrically Verified Seller</span>
                   </div>
-                  <div className={s.aiBadge}>
-                    <span className={s.aiIcon}>✨</span>
+                </div>
+
+                <h2 className={s.showcaseTitle}>
+                  Swiss Patek Philippe 18K Gold Pocket Chronograph
+                </h2>
+
+                <p className={s.showcaseDesc}>
+                  Engine-turned solid 18K yellow gold case with enamel dial, subsidiary seconds, and 30-minute register. Cross-referenced with the Metropolitan Museum of Art European Sculpture &amp; Decorative Arts archives.
+                </p>
+
+                {/* Bidding & Timer Module */}
+                <div className={s.biddingEngineBox}>
+                  <div className={s.biddingRowTop}>
                     <div>
-                      <div className={s.aiScoreText}>96% Confidence</div>
-                      <div className={s.aiSubText}>Met Museum Validated</div>
+                      <div className={s.engineBidLabel}>CURRENT LEADING BID</div>
+                      <div className={s.engineBidAmount}>
+                        $14,500 <span className={s.engineBidCurrency}>USD</span>
+                      </div>
+                      <div className={s.engineBidSub}>Next minimum bid: $15,000</div>
+                    </div>
+
+                    <div className={s.engineTimerContainer}>
+                      <div className={s.engineTimerLabel}>TIME REMAINING</div>
+                      <div className={s.timerBlocks}>
+                        <div className={s.timerBlock}><span className={s.timerNum}>02</span><span className={s.timerUnit}>DAYS</span></div>
+                        <div className={s.timerSep}>:</div>
+                        <div className={s.timerBlock}><span className={s.timerNum}>11</span><span className={s.timerUnit}>HRS</span></div>
+                        <div className={s.timerSep}>:</div>
+                        <div className={s.timerBlock}><span className={s.timerNum}>45</span><span className={s.timerUnit}>MIN</span></div>
+                        <div className={s.timerSep}>:</div>
+                        <div className={s.timerBlock}><span className={s.timerNum}>18</span><span className={s.timerUnit}>SEC</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Bid Increment Buttons */}
+                  <div className={s.quickBidsRow}>
+                    <span className={s.quickBidLabel}>Quick Bid:</span>
+                    <button type="button" className={s.quickBidBtn}>+$500</button>
+                    <button type="button" className={s.quickBidBtn}>+$1,000</button>
+                    <button type="button" className={s.quickBidBtn}>+$2,500</button>
+                  </div>
+
+                  {/* Primary Bid Action */}
+                  <div className={s.bidActionContainer}>
+                    <Link href="/register" className={s.enginePlaceBidBtn}>
+                      Place Bid &bull; $15,000 USD
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Trust Footer */}
+                <div className={s.showcaseTrustFooter}>
+                  <div className={s.trustFooterItem}>
+                    <span className={s.trustFooterIcon}>🛡️</span>
+                    <div>
+                      <strong>100% Escrow Protection</strong>
+                      <p>Funds locked securely until item is received &amp; inspected</p>
+                    </div>
+                  </div>
+                  <div className={s.trustFooterItem}>
+                    <span className={s.trustFooterIcon}>⚡</span>
+                    <div>
+                      <strong>Instant Outbid Refund</strong>
+                      <p>Wallet balance returned immediately if outbid</p>
                     </div>
                   </div>
                 </div>
 
-                <div className={s.heroBidBox}>
-                  <div>
-                    <div className={s.bidLabel}>Current Bid</div>
-                    <div className={s.bidAmount}>$14,500 <span className={s.bidCurrency}>USD</span></div>
-                  </div>
-                  <div className={s.bidTimerBox}>
-                    <div className={s.timerLabel}>Time Remaining</div>
-                    <div className={s.timerValue}>02d : 11h : 45m</div>
-                  </div>
-                  <Link href="/register" className={s.cardBidBtn}>
-                    Place Bid
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating Trust Indicator */}
-            <div className={s.floatingTag}>
-              <div className={s.tagIcon}>🛡️</div>
-              <div>
-                <div className={s.tagTitle}>Locked Escrow Guarantee</div>
-                <div className={s.tagSub}>Funds released only upon confirmed delivery</div>
               </div>
             </div>
           </div>
@@ -294,7 +385,7 @@ export default function Home() {
       <footer className={s.footer}>
         <div className={s.footerInner}>
           <div className={s.footerBrand}>
-            <Logo size={28} fontSize={22} />
+            <Logo size={36} fontSize={26} />
             <p className={s.footerMotto}>
               The intelligent auction house for vintage treasures and untapped inventions. AI-Verified, Trust-Driven, Future-Ready.
             </p>

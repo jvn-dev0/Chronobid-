@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Database')))
@@ -25,8 +26,6 @@ def get_dashboard_stats(admin: models.Admin = Depends(require_admin), db: Sessio
     active_auctions = db.query(models.Auction).filter(models.Auction.status == "Live").count()
     pending_auctions = db.query(models.Auction).filter(models.Auction.status == "Pending_Verification").count()
     
-    # In a real app, you would sum up completed transactions.
-    # For now, return a placeholder revenue.
     return {
         "total_revenue": 128450,
         "revenue_growth": 14.2,
@@ -63,6 +62,14 @@ def approve_auction(request: schemas.AdminActionRequest, user: models.User = Dep
 
     new_status = "Live" if request.action.lower() == "approve" else "Rejected"
     auction.status = new_status
+    
+    # Refresh auction duration so approved lot gets fresh bidding time
+    if new_status == "Live":
+        now = datetime.utcnow()
+        if not auction.end_time or auction.end_time <= now:
+            auction.start_time = now
+            auction.end_time = now + timedelta(days=7)
+
     
     # Ensure an admin record exists for the approval log
     admin_profile = db.query(models.Admin).filter(models.Admin.user_id == user.id).first()

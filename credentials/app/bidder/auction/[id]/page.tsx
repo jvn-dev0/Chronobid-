@@ -41,6 +41,24 @@ export default function BiddingPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [lockedBalance, setLockedBalance] = useState<number>(0);
+
+  const fetchWallet = async () => {
+    try {
+      const token = getToken();
+      if (!token) return;
+      const res = await fetch('http://127.0.0.1:8000/api/wallet/balance', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const wData = await res.json();
+        setWalletBalance(wData.balance || 0);
+        setLockedBalance(wData.locked_balance || 0);
+      }
+    } catch {}
+  };
+
   const fetchAuction = async () => {
     try {
       const token = getToken();
@@ -67,18 +85,30 @@ export default function BiddingPage() {
   useEffect(() => {
     if (id) {
       fetchAuction();
+      fetchWallet();
       
       // Setup simple polling every 10 seconds to refresh bids
-      const interval = setInterval(fetchAuction, 10000);
+      const interval = setInterval(() => {
+        fetchAuction();
+        fetchWallet();
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [id]);
+
+  const availableBalance = Math.max(0, walletBalance - lockedBalance);
 
   const handlePlaceBid = async () => {
     setErrorMsg('');
     setSuccessMsg('');
     if (!bidAmount) return;
     
+    const numericBid = parseFloat(bidAmount);
+    if (availableBalance < numericBid) {
+      setErrorMsg('INSUFFICIENT_FUNDS');
+      return;
+    }
+
     setBidding(true);
     try {
       const token = getToken();
@@ -90,17 +120,22 @@ export default function BiddingPage() {
         },
         body: JSON.stringify({
           auction_id: parseInt(id as string, 10),
-          bid_amount: parseFloat(bidAmount)
+          bid_amount: numericBid
         })
       });
       
       const data = await res.json();
       if (res.ok) {
-        setSuccessMsg("Bid placed successfully!");
+        setSuccessMsg(`✓ Bid placed successfully! $${numericBid.toLocaleString()} locked in Escrow.`);
         setBidAmount('');
-        fetchAuction(); // refresh the bids
+        fetchAuction();
+        fetchWallet();
       } else {
-        setErrorMsg(data.detail || "Failed to place bid");
+        if (data.detail && data.detail.toLowerCase().includes('insufficient')) {
+          setErrorMsg('INSUFFICIENT_FUNDS');
+        } else {
+          setErrorMsg(data.detail || "Failed to place bid");
+        }
       }
     } catch (err) {
       setErrorMsg("A network error occurred.");
@@ -150,7 +185,18 @@ export default function BiddingPage() {
             )}
             
             {auction.image_url ? (
-              <img src={`http://127.0.0.1:8000/api/uploads/${auction.image_url.split('/').pop()}`} alt={auction.title} className={s.mainImage} />
+              <img 
+                src={auction.image_url.startsWith('http') ? auction.image_url : `http://localhost:8000${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
+                alt={auction.title} 
+                className={s.mainImage} 
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  const filename = auction.image_url?.split('/').pop() || '';
+                  if (filename && !target.src.endsWith(filename)) {
+                    target.src = `http://localhost:8000/uploads/${filename}`;
+                  }
+                }}
+              />
             ) : (
               <div className={s.noImage}>No Image Provided</div>
             )}
@@ -196,8 +242,21 @@ export default function BiddingPage() {
             
             <div className={s.priceSection}>
               <div className={s.priceLabel}>Current Bid</div>
-              <div className={s.currentPrice}>${currentPrice.toLocaleString()}</div>
+              <div className={s.currentPrice}>${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
               <div className={s.minBid}>Enter ${minRequiredBid.toLocaleString()} or more</div>
+            </div>
+
+            {/* Available Vault Balance Banner */}
+            <div style={{ background: '#0F254A', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '12px', padding: '12px 16px', margin: '16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '11px', color: '#9AA6B8', fontWeight: 700, display: 'block' }}>AVAILABLE VAULT BALANCE</span>
+                <span style={{ fontSize: '16px', color: '#34D399', fontWeight: 900 }}>
+                  ${availableBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <Link href="/bidder/wallet" style={{ color: '#D9A928', fontSize: '12.5px', fontWeight: 700, textDecoration: 'none' }}>
+                + Add Funds
+              </Link>
             </div>
             
             {auction.status === 'Live' ? (
@@ -213,15 +272,33 @@ export default function BiddingPage() {
                     min={minRequiredBid}
                   />
                 </div>
+
+                {errorMsg === 'INSUFFICIENT_FUNDS' ? (
+                  <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #FCA5A5', borderRadius: '12px', padding: '14px', margin: '12px 0', color: '#FCA5A5', textAlign: 'left' }}>
+                    <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#EF4444', marginBottom: '4px' }}>
+                      ⚠️ Insufficient Vault Balance!
+                    </div>
+                    <p style={{ fontSize: '12.5px', margin: '0 0 10px 0', color: '#F87171', lineHeight: 1.4 }}>
+                      Your available balance (${availableBalance.toLocaleString()}) is lower than the requested bid (${parseFloat(bidAmount || '0').toLocaleString()}).
+                    </p>
+                    <Link href="/bidder/wallet" style={{ display: 'inline-flex', background: '#EF4444', color: '#FFFFFF', padding: '8px 14px', borderRadius: '8px', fontWeight: 800, fontSize: '12.5px', textDecoration: 'none' }}>
+                      💳 Add Funds to Wallet →
+                    </Link>
+                  </div>
+                ) : errorMsg ? (
+                  <div className={s.errorMsg}>⚠️ {errorMsg}</div>
+                ) : null}
+
+                {successMsg && <div className={s.successMsg}>{successMsg}</div>}
+
                 <button 
                   className={s.placeBidBtn} 
                   onClick={handlePlaceBid}
                   disabled={bidding || !bidAmount || parseFloat(bidAmount) < minRequiredBid}
+                  style={{ marginTop: '12px' }}
                 >
-                  {bidding ? 'Placing Bid...' : 'Place Bid'}
+                  {bidding ? 'Placing Bid...' : 'Confirm & Reserve Bid →'}
                 </button>
-                {errorMsg && <div className={s.errorMsg}>{errorMsg}</div>}
-                {successMsg && <div className={s.successMsg}>{successMsg}</div>}
               </div>
             ) : (
               <div className={s.errorMsg} style={{textAlign: 'center', marginTop: 0}}>

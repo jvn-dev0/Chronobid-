@@ -34,10 +34,13 @@ async def create_auction(
     if not seller_profile:
         raise HTTPException(status_code=403, detail="Only registered sellers can create auctions")
 
-    # 1. Save the uploaded file locally
+    # 1. Save the uploaded file locally with a unique name
     uploads_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads'))
     os.makedirs(uploads_dir, exist_ok=True)
-    file_location = os.path.join(uploads_dir, file.filename)
+    import uuid
+    safe_name = file.filename.replace(' ', '_')
+    unique_filename = f"{uuid.uuid4().hex[:8]}_{safe_name}"
+    file_location = os.path.join(uploads_dir, unique_filename)
     with open(file_location, "wb+") as file_object:
         shutil.copyfileobj(file.file, file_object)
 
@@ -206,22 +209,28 @@ def finalize_auction(auction_id: int, db: Session = Depends(get_db), current_use
     if not winner_wallet or not seller_wallet:
         raise HTTPException(status_code=500, detail="Wallet mismatch during finalization")
 
+    # Calculate percentage-based platform commission on final winning bid
+    winning_bid_amount = highest_bid.bid_amount
+    commission_rate = 0.05 # 5.0% configured platform commission
+    platform_commission = round(winning_bid_amount * commission_rate, 2)
+    net_seller_payout = round(winning_bid_amount - platform_commission, 2)
+
     # The winner's money is currently in locked_balance. We subtract it fully.
-    winner_wallet.balance -= highest_bid.bid_amount
-    winner_wallet.locked_balance -= highest_bid.bid_amount
+    winner_wallet.balance -= winning_bid_amount
+    winner_wallet.locked_balance -= winning_bid_amount
     buyer_transaction = models_phase2.WalletTransaction(
         wallet_id=winner_wallet.id,
-        amount=-highest_bid.bid_amount,
+        amount=-winning_bid_amount,
         transaction_type="Auction Payment"
     )
     db.add(buyer_transaction)
 
-    # Transfer to seller
-    seller_wallet.balance += highest_bid.bid_amount
+    # Transfer net payout (winning bid minus 5.0% commission) to seller
+    seller_wallet.balance += net_seller_payout
     seller_transaction = models_phase2.WalletTransaction(
         wallet_id=seller_wallet.id,
-        amount=highest_bid.bid_amount,
-        transaction_type="Auction Payout"
+        amount=net_seller_payout,
+        transaction_type=f"Auction Payout (Net of 5% Commission: -₹{platform_commission})"
     )
     db.add(seller_transaction)
 

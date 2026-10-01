@@ -1,0 +1,26 @@
+thresholds:
+  category_confidence_min: 0.55
+  ambiguity_margin: 0.15
+  similarity_min: 0.45
+  quality_min: 0.60
+  museum_photo_similarity: 0.95
+  duplicate_hash_distance: 5
+  period_similarity_min: 0.50
+  min_resolution_px: 400
+  laplacian_blur_threshold: 100.0
+
+prohibited_keywords:
+  - firearm
+  - gun
+  - pistol
+  - rifle
+  - weapon
+  - human remains
+  - skull
+  - ivory
+  - turtle shell
+  - endangered species
+  - cultural patrimony
+  - sacred artifact
+  - counterfeit
+  - replica Rolex

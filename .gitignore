@@ -11,6 +11,11 @@ Ai/item-verification/dataset_images/
 Ai/item-verification/temp_uploads/
 Ai/item-verification/dataset_metadata.json
 
+# Node & Next.js
+node_modules/
+.next/
+*.zip
+
 # OS generated files
 .DS_Store
 Thumbs.db
