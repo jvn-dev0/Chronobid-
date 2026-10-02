@@ -239,3 +239,12 @@ class AuditLog(Base):
     target_table = Column(String(50))
     target_id = Column(Integer)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+class SystemConfig(Base):
+    __tablename__ = "system_config"
+    id = Column(Integer, primary_key=True, index=True)
+    seller_commission_fee = Column(Float, default=5.0)
+    buyer_premium_fee = Column(Float, default=10.0)
+    listing_fee = Column(Float, default=25.0)
+    auto_approve_ocr = Column(Integer, default=85)
+    auto_reject_face = Column(Integer, default=40)

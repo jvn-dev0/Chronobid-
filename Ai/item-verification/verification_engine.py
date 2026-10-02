@@ -41,9 +41,9 @@ DISCLAIMER_TEXT = "AI-assisted screening only. This is not an authentication or 
 
 class VerificationEngine:
     def __init__(self):
-        print("🤖 Initializing Verification Engine...")
+        print("[AI] Initializing Verification Engine...")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"  • Using compute device: {self.device}")
+        print(f"  * Using compute device: {self.device}")
         
         self.model = CLIPModel.from_pretrained(settings.CLIP_MODEL_NAME).to(self.device)
         self.processor = CLIPProcessor.from_pretrained(settings.CLIP_MODEL_NAME)
@@ -93,7 +93,7 @@ class VerificationEngine:
         conn.close()
 
     def precompute_category_text_embeddings(self):
-        print("  • Pre-computing category text embeddings...")
+        print("  * Pre-computing category text embeddings...")
         with torch.no_grad():
             for cat in CHRONOBID_CATEGORIES:
                 prompts = [
@@ -105,6 +105,8 @@ class VerificationEngine:
                 ]
                 inputs = self.processor(text=prompts, return_tensors="pt", padding=True).to(self.device)
                 text_features = self.model.get_text_features(**inputs)
+                if hasattr(text_features, "pooler_output"):
+                    text_features = text_features.pooler_output
                 norm_features = text_features / text_features.norm(dim=-1, keepdim=True)
                 avg_feature = norm_features.mean(dim=0, keepdim=True)
                 avg_feature = avg_feature / avg_feature.norm(dim=-1, keepdim=True)
@@ -112,6 +114,8 @@ class VerificationEngine:
 
             inputs_other = self.processor(text=OTHER_PROMPTS, return_tensors="pt", padding=True).to(self.device)
             other_features = self.model.get_text_features(**inputs_other)
+            if hasattr(other_features, "pooler_output"):
+                other_features = other_features.pooler_output
             other_norm = other_features / other_features.norm(dim=-1, keepdim=True)
             other_avg = other_norm.mean(dim=0, keepdim=True)
             other_avg = other_avg / other_avg.norm(dim=-1, keepdim=True)
@@ -119,7 +123,7 @@ class VerificationEngine:
 
     def load_dataset_embeddings(self):
         if not os.path.exists(settings.METADATA_FILE):
-            print("⚠️ No dataset metadata found. Run fetch_met_data.py to build reference dataset.")
+            print("[WARNING] No dataset metadata found. Run fetch_met_data.py to build reference dataset.")
             return False
             
         with open(settings.METADATA_FILE, 'r', encoding='utf-8') as f:

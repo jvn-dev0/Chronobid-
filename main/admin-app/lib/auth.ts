@@ -23,7 +23,7 @@ export interface AdminLoginResponse {
   email: string;
 }
 
-export async function loginAdmin(email: str, password: str): Promise<AdminLoginResponse> {
+export async function loginAdmin(email: string, password: string): Promise<AdminLoginResponse> {
   const response = await fetch(`${ADMIN_CONFIG.apiBaseUrl}/api/admin/login`, {
     method: "POST",
     headers: {

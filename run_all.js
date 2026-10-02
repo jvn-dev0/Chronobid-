@@ -20,28 +20,28 @@ const services = [
   {
     name: 'Main Backend (Port 8000)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'main:app', '--port', '8000'],
+    args: ['-m', 'uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000'],
     cwd: path.join(__dirname, 'backend'),
     color: '\x1b[32m' // Green
   },
   {
     name: 'Item Verification AI (Port 8001)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'app:app', '--port', '8001'],
+    args: ['-m', 'uvicorn', 'app:app', '--host', '0.0.0.0', '--port', '8001'],
     cwd: path.join(__dirname, 'Ai', 'item-verification'),
     color: '\x1b[33m' // Yellow
   },
   {
     name: 'Identity Verification AI (Port 8003)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'app:app', '--port', '8003'],
+    args: ['-m', 'uvicorn', 'app:app', '--host', '0.0.0.0', '--port', '8003'],
     cwd: path.join(__dirname, 'Ai', 'identity-verification'),
     color: '\x1b[35m' // Magenta
   },
   {
     name: 'JasperBot AI (Port 8004)',
     command: 'python',
-    args: ['-m', 'uvicorn', 'app:app', '--port', '8004'],
+    args: ['-m', 'uvicorn', 'app:app', '--host', '0.0.0.0', '--port', '8004'],
     cwd: path.join(__dirname, 'Ai', 'jasper-bot'),
     color: '\x1b[34m' // Blue
   }
