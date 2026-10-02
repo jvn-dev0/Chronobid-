@@ -13,6 +13,8 @@ import models
 import schemas
 from database import get_db
 from dependencies import get_current_user
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.cloud_storage import upload_to_supabase_storage, BUCKET_SELLER_DOCS
 
 # Try loading local AI Identity Verification Pipeline
 try:
@@ -31,91 +33,77 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # ─── 1. Upload Document Image (ID Card / Passport etc.) ───────
 @router.post("/upload/document", status_code=status.HTTP_200_OK)
-def upload_id_document(
+async def upload_id_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
     """
     Accepts the government ID image upload.
-    Saves the file to the server and returns the saved file path.
+    Uploads to Supabase Storage and returns the permanent CDN URL.
     """
-    # Validate file type
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Only JPG, PNG, or PDF files are allowed.")
 
-    # Validate file size (max 5MB)
-    file.file.seek(0, 2)  # Seek to end
-    file_size = file.file.tell()
-    file.file.seek(0)     # Reset
-    if file_size > 5 * 1024 * 1024:
+    file_bytes = await file.read()
+    if len(file_bytes) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size must be under 5MB.")
 
-    # Generate a unique filename so files never clash
-    ext = os.path.splitext(file.filename)[1]
-    unique_filename = f"id_doc_{current_user.id}_{uuid.uuid4().hex}{ext}"
-    save_path = os.path.join(UPLOAD_DIR, unique_filename)
+    cloud_file_url = await upload_to_supabase_storage(
+        file_bytes=file_bytes,
+        filename=file.filename or "id_doc.jpg",
+        bucket_name=BUCKET_SELLER_DOCS,
+        content_type=file.content_type or "image/jpeg"
+    )
 
-    # Save file to disk
-    with open(save_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # Save the file path in the seller's database record immediately
     seller = db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first()
     if seller:
-        seller.id_document_url = f"/uploads/seller_docs/{unique_filename}"
+        seller.id_document_url = cloud_file_url
         db.commit()
 
     return {
         "message": "Document uploaded successfully.",
-        "file_url": f"/uploads/seller_docs/{unique_filename}",
-        "filename": unique_filename
+        "file_url": cloud_file_url,
+        "filename": os.path.basename(cloud_file_url)
     }
 
 
 # ─── 2. Upload Selfie ─────────────────────────────────────────
 @router.post("/upload/selfie", status_code=status.HTTP_200_OK)
-def upload_selfie(
+async def upload_selfie(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
     """
     Accepts the selfie image upload.
-    Saves the file to the server and returns the saved file path.
+    Uploads to Supabase Storage and returns the permanent CDN URL.
     """
-    # Validate file type
     allowed_types = ["image/jpeg", "image/png", "image/jpg"]
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Only JPG or PNG images are allowed for selfie.")
 
-    # Validate file size (max 5MB)
-    file.file.seek(0, 2)
-    file_size = file.file.tell()
-    file.file.seek(0)
-    if file_size > 5 * 1024 * 1024:
+    file_bytes = await file.read()
+    if len(file_bytes) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size must be under 5MB.")
 
-    # Generate a unique filename
-    ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
-    unique_filename = f"selfie_{current_user.id}_{uuid.uuid4().hex}{ext}"
-    save_path = os.path.join(UPLOAD_DIR, unique_filename)
+    cloud_file_url = await upload_to_supabase_storage(
+        file_bytes=file_bytes,
+        filename=file.filename or "selfie.jpg",
+        bucket_name=BUCKET_SELLER_DOCS,
+        content_type=file.content_type or "image/jpeg"
+    )
 
-    # Save file to disk
-    with open(save_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # Save the file path in the seller's database record immediately
     seller = db.query(models.Seller).filter(models.Seller.user_id == current_user.id).first()
     if seller:
-        seller.selfie_url = f"/uploads/seller_docs/{unique_filename}"
+        seller.selfie_url = cloud_file_url
         db.commit()
 
     return {
         "message": "Selfie uploaded successfully.",
-        "file_url": f"/uploads/seller_docs/{unique_filename}",
-        "filename": unique_filename
+        "file_url": cloud_file_url,
+        "filename": os.path.basename(cloud_file_url)
     }
 
 
