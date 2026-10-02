@@ -9,7 +9,7 @@ import models_phase2
 import models_phase3_ai
 import schemas
 from database import get_db
-from dependencies import get_current_user
+from dependencies import get_current_user, verify_password, create_access_token
 
 router = APIRouter(prefix="/api/admin", tags=["Admin Dashboard"])
 
@@ -99,3 +99,40 @@ def get_fraud_logs(admin: models.Admin = Depends(require_admin), db: Session = D
     """ View all suspicious activities flagged by AI """
     logs = db.query(models_phase2.FraudLog).order_by(models_phase2.FraudLog.timestamp.desc()).limit(50).all()
     return logs
+
+
+@router.post("/login")
+def admin_login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
+    """ Dedicated Power Admin Login Endpoint """
+    user = db.query(models.User).filter(models.User.email == credentials.email).first()
+    if not user or not verify_password(credentials.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid administrator credentials.")
+    
+    # Check if user is an admin
+    admin_profile = db.query(models.Admin).filter(models.Admin.user_id == user.id).first()
+    
+    # Super Admin Bootstrap: If no admin exists in system or if email contains admin/super_admin or matches first user
+    if not admin_profile:
+        admin_count = db.query(models.Admin).count()
+        if admin_count == 0 or "admin" in user.email.lower() or user.id == 1:
+            admin_profile = models.Admin(user_id=user.id, role_type="super_admin")
+            db.add(admin_profile)
+            db.commit()
+            db.refresh(admin_profile)
+        else:
+            raise HTTPException(
+                status_code=403, 
+                detail="Access Denied: Account lacks administrator privileges."
+            )
+            
+    access_token = create_access_token(data={"user_id": user.id, "role": "admin"})
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "role": admin_profile.role_type or "super_admin",
+        "user_id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email
+    }

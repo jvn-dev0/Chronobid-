@@ -1,14 +1,21 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Configuration for all the services we need to run
+// Configuration for all ChronoBid services
 const services = [
   {
-    name: 'Frontend (Next.js)',
+    name: 'Frontend (Next.js - Port 3000)',
     command: 'npm',
     args: ['run', 'dev'],
     cwd: path.join(__dirname, 'credentials'),
     color: '\x1b[36m' // Cyan
+  },
+  {
+    name: 'Power Admin (Port 3001)',
+    command: 'npm',
+    args: ['run', 'dev'],
+    cwd: path.join(__dirname, 'admin-app'),
+    color: '\x1b[95m' // Bright Magenta
   },
   {
     name: 'Main Backend (Port 8000)',
@@ -40,20 +47,19 @@ const services = [
   }
 ];
 
-console.log('🚀 Starting all Chronobid services...\n');
+console.log('🚀 Starting all ChronoBid services...\n');
 
 const processes = [];
 
 services.forEach(service => {
   console.log(`${service.color}Starting ${service.name}...\x1b[0m`);
   
-  // Note: On Windows, we need to use 'npm.cmd' instead of 'npm'
   const cmd = process.platform === 'win32' && service.command === 'npm' ? 'npm.cmd' : service.command;
   
   const child = spawn(cmd, service.args, {
     cwd: service.cwd,
     stdio: 'pipe',
-    shell: true, // Use shell to handle virtual environments properly
+    shell: true,
     env: { ...process.env, PYTHONUNBUFFERED: '1' }
   });
 
@@ -78,7 +84,7 @@ services.forEach(service => {
   processes.push(child);
 });
 
-// Handle graceful shutdown only when explicitly requested
+// Handle graceful shutdown
 process.on('SIGTERM', () => {
   console.log('\n🛑 Shutting down all services...');
   processes.forEach(p => {
@@ -90,4 +96,3 @@ process.on('SIGTERM', () => {
   });
   setTimeout(() => process.exit(0), 1000);
 });
-
