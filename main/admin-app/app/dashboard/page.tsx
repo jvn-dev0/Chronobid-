@@ -198,50 +198,40 @@ export default function PowerAdminDashboard() {
           {/* OVERVIEW */}
           <div>
             <p className="px-3 text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Overview</p>
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                activeTab === "dashboard"
-                  ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold shadow-sm"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-              }`}
+            <a
+              href="/dashboard"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold shadow-xs"
             >
               <LayoutDashboard className="w-4 h-4" />
               <span>Dashboard</span>
-            </button>
+            </a>
           </div>
 
           {/* MANAGEMENT */}
           <div>
             <p className="px-3 text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Management</p>
             <div className="space-y-1">
-              <button
-                onClick={() => setActiveTab("users")}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                  activeTab === "users" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
+              <a
+                href="/users"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
               >
                 <Users className="w-4 h-4" />
                 <span>Users</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("item-approval")}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                  activeTab === "item-approval" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
+              </a>
+              <a
+                href="/item-approval"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>Item Approval</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("auctions")}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                  activeTab === "auctions" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
+              </a>
+              <a
+                href="/auctions"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
               >
                 <Gavel className="w-4 h-4" />
                 <span>Auctions</span>
-              </button>
+              </a>
             </div>
           </div>
 
@@ -249,53 +239,45 @@ export default function PowerAdminDashboard() {
           <div>
             <p className="px-3 text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Security</p>
             <div className="space-y-1">
-              <button
-                onClick={() => setActiveTab("ai-verification")}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                  activeTab === "ai-verification" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
+              <a
+                href="/ai-verification"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
               >
                 <Cpu className="w-4 h-4" />
                 <span>AI Verification</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("fraud-risk")}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                  activeTab === "fraud-risk" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
+              </a>
+              <a
+                href="/fraud"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
               >
                 <ShieldAlert className="w-4 h-4" />
                 <span>Fraud & Risk</span>
-              </button>
+              </a>
             </div>
           </div>
 
           {/* FINANCE */}
           <div>
             <p className="px-3 text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Finance</p>
-            <button
-              onClick={() => setActiveTab("finance")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                activeTab === "finance" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-              }`}
+            <a
+              href="/finance"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
             >
               <DollarSign className="w-4 h-4" />
               <span>Finance & Escrow</span>
-            </button>
+            </a>
           </div>
 
           {/* SYSTEM */}
           <div>
             <p className="px-3 text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2">System</p>
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                activeTab === "settings" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-              }`}
+            <a
+              href="/settings"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900"
             >
               <Settings className="w-4 h-4" />
               <span>Settings</span>
-            </button>
+            </a>
           </div>
         </nav>
 
@@ -819,8 +801,8 @@ export default function PowerAdminDashboard() {
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button
-                onClick={() => setActiveTab("item-approval")}
+              <a
+                href="/item-approval"
                 className="p-4 bg-amber-50/70 hover:bg-amber-100/70 rounded-2xl border border-amber-200/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
               >
                 <div>
@@ -828,10 +810,10 @@ export default function PowerAdminDashboard() {
                   <p className="text-[11px] text-amber-700/80 mt-0.5">Items waiting for approval</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-amber-700 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </a>
 
-              <button
-                onClick={() => setActiveTab("fraud-risk")}
+              <a
+                href="/fraud"
                 className="p-4 bg-rose-50/70 hover:bg-rose-100/70 rounded-2xl border border-rose-200/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
               >
                 <div>
@@ -839,10 +821,10 @@ export default function PowerAdminDashboard() {
                   <p className="text-[11px] text-rose-700/80 mt-0.5">Check suspicious activities</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-rose-700 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </a>
 
-              <button
-                onClick={() => setActiveTab("auctions")}
+              <a
+                href="/auctions"
                 className="p-4 bg-blue-50/70 hover:bg-blue-100/70 rounded-2xl border border-blue-200/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
               >
                 <div>
@@ -850,10 +832,10 @@ export default function PowerAdminDashboard() {
                   <p className="text-[11px] text-blue-700/80 mt-0.5">View and manage live lots</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-blue-700 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </a>
 
-              <button
-                onClick={() => setActiveTab("finance")}
+              <a
+                href="/finance"
                 className="p-4 bg-emerald-50/70 hover:bg-emerald-100/70 rounded-2xl border border-emerald-200/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
               >
                 <div>
@@ -861,7 +843,7 @@ export default function PowerAdminDashboard() {
                   <p className="text-[11px] text-emerald-700/80 mt-0.5">Escrow, payouts, revenue</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </a>
             </div>
           </div>
         </main>
