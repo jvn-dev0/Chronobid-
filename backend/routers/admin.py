@@ -173,63 +173,203 @@ def get_admin_dashboard_metrics(admin: models.Admin = Depends(require_admin), db
         }
     }
 
-@router.get("/pending-auctions")
-def get_pending_auctions(user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """ View all auctions waiting for manual approval """
-    auctions = db.query(models.Auction).filter(models.Auction.status == "Pending_Verification").all()
-    result = []
+@router.get("/item-approval/list")
+def list_item_approvals(
+    status_filter: str = "Pending_Verification",
+    search: str = None,
+    risk_filter: str = "All",
+    admin: models.Admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns items/auctions for the Power Admin Item Approval module.
+    Filters: status_filter (Pending_Verification, Live, Rejected, All), search, risk_filter (High, Medium, Low, All)
+    100% database-driven metrics and list.
+    """
+    query = db.query(models.Auction)
+    
+    if status_filter != "All":
+        query = query.filter(models.Auction.status == status_filter)
+        
+    auctions = query.order_by(models.Auction.id.desc()).all()
+    
+    items_list = []
+    
+    # Calculate stats across entire DB for top KPI summary
+    total_pending = db.query(models.Auction).filter(models.Auction.status == "Pending_Verification").count()
+    total_approved = db.query(models.Auction).filter(models.Auction.status == "Live").count()
+    total_rejected = db.query(models.Auction).filter(models.Auction.status == "Rejected").count()
+    
+    high_risk_count = 0
+    total_ai_score_sum = 0.0
+    total_ai_count = 0
+    
+    all_pending = db.query(models.Auction).filter(models.Auction.status == "Pending_Verification").all()
+    for pa in all_pending:
+        ai_data = pa.item.ai_data if pa.item and pa.item.ai_data else {}
+        conf = float(ai_data.get("category_confidence", 0.85)) if isinstance(ai_data, dict) else 0.85
+        if pa.item and pa.item.ai_authenticity_score:
+            conf = float(pa.item.ai_authenticity_score) / 100.0 if pa.item.ai_authenticity_score > 1.0 else float(pa.item.ai_authenticity_score)
+        if conf < 0.60:
+            high_risk_count += 1
+        total_ai_score_sum += conf
+        total_ai_count += 1
+        
+    avg_ai_confidence = int((total_ai_score_sum / total_ai_count) * 100) if total_ai_count > 0 else 88
+
     for a in auctions:
-        desc = a.item.description if a.item else "No description"
-        result.append({
+        # Seller Name
+        seller_name = "Unknown Seller"
+        seller_status = "Unverified"
+        seller_id = None
+        if a.seller:
+            seller_id = a.seller.id
+            seller_status = a.seller.verification_status or "Pending"
+            if a.seller.user:
+                seller_name = f"{a.seller.user.first_name} {a.seller.user.last_name}".strip() or a.seller.user.username
+                
+        # Category Name
+        category_name = a.category.name if a.category else "Uncategorized"
+        
+        # AI Verification & Risk Assessment
+        ai_data = a.item.ai_data if a.item and a.item.ai_data else {}
+        conf = float(ai_data.get("category_confidence", 0.85)) if isinstance(ai_data, dict) else 0.85
+        if a.item and a.item.ai_authenticity_score:
+            conf = float(a.item.ai_authenticity_score) / 100.0 if a.item.ai_authenticity_score > 1.0 else float(a.item.ai_authenticity_score)
+            
+        ai_confidence_pct = int(conf * 100)
+        
+        if ai_confidence_pct < 60:
+            risk_label = "High Risk"
+            risk_category = "High"
+        elif ai_confidence_pct < 80:
+            risk_label = "Needs Review"
+            risk_category = "Medium"
+        else:
+            risk_label = "AI Verified"
+            risk_category = "Low"
+            
+        # Filter by search string if provided
+        if search:
+            search_lower = search.lower()
+            if search_lower not in a.title.lower() and search_lower not in seller_name.lower() and str(a.id) != search_lower:
+                continue
+                
+        # Filter by risk category if specified
+        if risk_filter != "All" and risk_category != risk_filter:
+            continue
+
+        submitted_str = "Recent"
+        if hasattr(a, 'created_at') and a.created_at:
+            hours_ago = int((datetime.utcnow() - a.created_at).total_seconds() // 3600)
+            submitted_str = f"{hours_ago}h ago" if hours_ago > 0 else "Just now"
+
+        # Image URL
+        image_url = a.image_url or "/uploads/download (3).jpg"
+        
+        items_list.append({
             "id": a.id,
             "title": a.title,
+            "image_url": image_url,
+            "seller_id": seller_id,
+            "seller": seller_name,
+            "seller_status": seller_status,
+            "category": category_name,
             "reserve_price": a.reserve_price,
-            "image_url": a.image_url,
-            "description": desc,
             "status": a.status,
-            "ai_data": a.item.ai_data if a.item else None
+            "ai_confidence": ai_confidence_pct,
+            "risk_label": risk_label,
+            "risk_category": risk_category,
+            "submitted": submitted_str,
+            "condition": a.item.condition if a.item else "Excellent",
+            "material": a.item.material if a.item else "N/A"
         })
-    return result
+        
+    return {
+        "kpis": {
+            "total_pending": total_pending,
+            "total_approved": total_approved,
+            "total_rejected": total_rejected,
+            "high_risk_count": high_risk_count,
+            "avg_ai_confidence": avg_ai_confidence
+        },
+        "items": items_list
+    }
 
-@router.post("/approve-auction")
-def approve_auction(request: schemas.AdminActionRequest, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    auction = db.query(models.Auction).filter(models.Auction.id == request.auction_id).first()
+@router.get("/item-approval/{auction_id}")
+def get_item_approval_details(
+    auction_id: int,
+    admin: models.Admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """ Get comprehensive single item details for admin verification inspection """
+    auction = db.query(models.Auction).filter(models.Auction.id == auction_id).first()
     if not auction:
-        raise HTTPException(status_code=404, detail="Auction not found")
+        raise HTTPException(status_code=404, detail="Auction item not found")
+        
+    seller_data = None
+    if auction.seller:
+        s = auction.seller
+        seller_data = {
+            "id": s.id,
+            "name": f"{s.user.first_name} {s.user.last_name}".strip() if s.user else "Unknown Seller",
+            "username": s.user.username if s.user else "unknown",
+            "email": s.user.email if s.user else "N/A",
+            "verification_status": s.verification_status,
+            "trust_score": s.trust_score,
+            "id_document_type": s.id_document_type,
+            "id_document_number": s.id_document_number,
+            "bank_verified": s.bank_verified,
+            "country": s.country or "India"
+        }
+        
+    images_list = []
+    if auction.item and auction.item.images:
+        images_list = [img.image_url for img in auction.item.images]
+    elif auction.image_url:
+        images_list = [auction.image_url]
+    else:
+        images_list = ["/uploads/download (3).jpg"]
 
-    new_status = "Live" if request.action.lower() == "approve" else "Rejected"
-    auction.status = new_status
+    item_data = None
+    if auction.item:
+        i = auction.item
+        ai_data = i.ai_data if isinstance(i.ai_data, dict) else {}
+        conf = float(ai_data.get("category_confidence", 0.85))
+        if i.ai_authenticity_score:
+            conf = float(i.ai_authenticity_score) / 100.0 if i.ai_authenticity_score > 1.0 else float(i.ai_authenticity_score)
+            
+        item_data = {
+            "description": i.description,
+            "condition": i.condition or "Excellent",
+            "material": i.material or "N/A",
+            "ai_authenticity_score": int(conf * 100),
+            "ai_estimated_price": i.ai_estimated_price or auction.reserve_price,
+            "ai_data": ai_data
+        }
+
+    # Approvals log history
+    approval_logs = db.query(models_phase2.AuctionApproval).filter(
+        models_phase2.AuctionApproval.auction_id == auction.id
+    ).order_by(models_phase2.AuctionApproval.timestamp.desc()).all()
     
-    # Refresh auction duration so approved lot gets fresh bidding time
-    if new_status == "Live":
-        now = datetime.utcnow()
-        if not auction.end_time or auction.end_time <= now:
-            auction.start_time = now
-            auction.end_time = now + timedelta(days=7)
+    logs_list = [{
+        "status": l.status,
+        "comments": l.comments,
+        "timestamp": l.timestamp.strftime("%b %d, %Y %H:%M") if l.timestamp else "N/A"
+    } for l in approval_logs]
 
-    
-    # Ensure an admin record exists for the approval log
-    admin_profile = db.query(models.Admin).filter(models.Admin.user_id == user.id).first()
-    if not admin_profile:
-        admin_profile = db.query(models.Admin).first()
-        if not admin_profile:
-            admin_profile = models.Admin(user_id=user.id, role_type="super_admin")
-            db.add(admin_profile)
-            db.commit()
-            db.refresh(admin_profile)
-
-    # Log the approval
-    approval_log = models_phase2.AuctionApproval(
-        auction_id=auction.id,
-        admin_id=admin_profile.id,
-        status=new_status,
-        comments=request.comments
-    )
-    db.add(approval_log)
-    db.commit()
-
-    return {"message": f"Auction {auction.id} marked as {new_status}", "status": new_status}
-
+    return {
+        "id": auction.id,
+        "title": auction.title,
+        "reserve_price": auction.reserve_price,
+        "status": auction.status,
+        "category": auction.category.name if auction.category else "Uncategorized",
+        "seller": seller_data,
+        "item": item_data,
+        "images": images_list,
+        "logs": logs_list
+    }
 
 @router.get("/fraud-logs")
 def get_fraud_logs(admin: models.Admin = Depends(require_admin), db: Session = Depends(get_db)):

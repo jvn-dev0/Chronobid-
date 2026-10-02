@@ -89,6 +89,7 @@ export default function SellerDashboard() {
             <Link href="/" className={styles.navLink}>Home</Link>
             <Link href="/seller/sell" className={`${styles.navLink} ${styles.navActive}`}>Sell</Link>
             <Link href="/seller/profile" className={styles.navLink}>My Listings</Link>
+            <Link href="/bidder/dashboard" className={styles.navLink}>Bidder View</Link>
             <Link href="/seller/dashboard" className={styles.navLink}>Messages</Link>
             <Link href="/about" className={styles.navLink}>About</Link>
           </nav>
@@ -125,6 +126,12 @@ export default function SellerDashboard() {
               </button>
               {isProfileOpen && (
                 <div className={styles.dropdown}>
+                  <Link href="/bidder/dashboard" className={styles.dropItem}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Bidder View &amp; Live Auctions
+                  </Link>
                   <Link href="/seller/profile" className={styles.dropItem}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
