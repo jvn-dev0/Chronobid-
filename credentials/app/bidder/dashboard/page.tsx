@@ -249,7 +249,7 @@ export default function BidderDashboard() {
           </div>
           <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
             <div><span style={{ color: '#9AA6B8' }}>Active Bids:</span> <strong style={{ color: '#F2C14E' }}>{profile.bids_count || 0}</strong></div>
-            <div><span style={{ color: '#9AA6B8' }}>Escrow Balance:</span> <strong style={{ color: '#4ade80' }}>₹{wallet.balance.toLocaleString()}</strong></div>
+            <div><span style={{ color: '#9AA6B8' }}>Escrow Balance:</span> <strong style={{ color: '#4ade80' }}>${wallet.balance.toLocaleString()}</strong></div>
           </div>
         </div>
       )}
@@ -374,7 +374,7 @@ export default function BidderDashboard() {
                     <div className={s.cardMetricsRow}>
                       <div>
                         <span className={s.bidSubText}>Current Bid</span>
-                        <div className={s.bidValText}>₹{Number(currentBidVal).toLocaleString()}</div>
+                        <div className={s.bidValText}>${Number(currentBidVal).toLocaleString()}</div>
                       </div>
                       <Link href={`/bidder/auction/${auction.id}`} className={s.bidCtaBtn}>
                         Place Bid ➔
