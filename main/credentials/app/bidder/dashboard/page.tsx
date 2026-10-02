@@ -56,6 +56,29 @@ export default function BidderDashboard() {
   const [isJasperLoading, setIsJasperLoading] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // Dynamic Currency Preference State
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('chronobid_currency');
+    if (savedCurrency === 'INR' || savedCurrency === 'USD') {
+      setCurrency(savedCurrency);
+    }
+  }, []);
+
+  const handleCurrencyChange = (newCurrency: 'USD' | 'INR') => {
+    setCurrency(newCurrency);
+    localStorage.setItem('chronobid_currency', newCurrency);
+  };
+
+  const formatPrice = (usdAmount: number) => {
+    if (currency === 'INR') {
+      const inrVal = Math.round(usdAmount * 83.5);
+      return `₹${inrVal.toLocaleString('en-IN')}`;
+    }
+    return `$${usdAmount.toLocaleString('en-US')}`;
+  };
+
   const isNewUser = (profile.bids_count || 0) === 0 && wallet.balance === 0;
 
   const askJasper = async (customPrompt?: string) => {
@@ -176,9 +199,29 @@ export default function BidderDashboard() {
             </svg>
           </Link>
 
+          {/* Currency Preference Selector */}
+          <select
+            value={currency}
+            onChange={(e) => handleCurrencyChange(e.target.value as 'USD' | 'INR')}
+            style={{
+              backgroundColor: '#0B1A36',
+              border: '1px solid rgba(217, 169, 40, 0.4)',
+              color: '#D9A928',
+              padding: '6px 10px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            <option value="USD">🇺🇸 USD ($)</option>
+            <option value="INR">🇮🇳 INR (₹)</option>
+          </select>
+
           <Link href="/bidder/wallet/deposit" className={s.escrowPill}>
             <span>💳 Escrow</span>
-            <span style={{ color: '#ffffff' }}>₹{wallet.balance.toLocaleString()}</span>
+            <span style={{ color: '#ffffff' }}>{formatPrice(wallet.balance)}</span>
           </Link>
 
           <div style={{ position: 'relative' }}>
@@ -249,7 +292,7 @@ export default function BidderDashboard() {
           </div>
           <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
             <div><span style={{ color: '#9AA6B8' }}>Active Bids:</span> <strong style={{ color: '#F2C14E' }}>{profile.bids_count || 0}</strong></div>
-            <div><span style={{ color: '#9AA6B8' }}>Escrow Balance:</span> <strong style={{ color: '#4ade80' }}>${wallet.balance.toLocaleString()}</strong></div>
+            <div><span style={{ color: '#9AA6B8' }}>Escrow Balance:</span> <strong style={{ color: '#4ade80' }}>{formatPrice(wallet.balance)}</strong></div>
           </div>
         </div>
       )}
@@ -374,7 +417,7 @@ export default function BidderDashboard() {
                     <div className={s.cardMetricsRow}>
                       <div>
                         <span className={s.bidSubText}>Current Bid</span>
-                        <div className={s.bidValText}>${Number(currentBidVal).toLocaleString()}</div>
+                        <div className={s.bidValText}>{formatPrice(Number(currentBidVal))}</div>
                       </div>
                       <Link href={`/bidder/auction/${auction.id}`} className={s.bidCtaBtn}>
                         Place Bid ➔
