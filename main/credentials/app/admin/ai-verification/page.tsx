@@ -14,7 +14,7 @@ export default function AIVerificationPage() {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem('chronobid_token');
-        const res = await fetch('http://localhost:8000/api/admin/pending-auctions', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/pending-auctions', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -31,7 +31,7 @@ export default function AIVerificationPage() {
   const handleApprove = async (auctionId: number) => {
     try {
       const token = localStorage.getItem('chronobid_token');
-      const res = await fetch('http://localhost:8000/api/admin/approve-auction', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/approve-auction', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -120,7 +120,7 @@ export default function AIVerificationPage() {
                 <div style={{ height: '200px', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                   {item.image_url ? (
                     <img 
-                      src={item.image_url.startsWith('http') ? item.image_url : `http://localhost:8000${item.image_url}`} 
+                      src={item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}${item.image_url}`} 
                       alt={item.title} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />

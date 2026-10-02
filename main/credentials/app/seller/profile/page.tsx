@@ -62,7 +62,7 @@ export default function ProfilePage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       // Fetch Profile
-      const profileRes = await fetch('http://localhost:8000/api/auth/me', { headers });
+      const profileRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/auth/me', { headers });
       if (profileRes.ok) {
         const profileData = await profileRes.json();
         setProfile(profileData);
@@ -89,7 +89,7 @@ export default function ProfilePage() {
       }
 
       // Fetch Wallet Balance
-      const walletRes = await fetch('http://localhost:8000/api/wallet/balance', { headers });
+      const walletRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/balance', { headers });
       if (walletRes.ok) {
         const walletData = await walletRes.json();
         setWallet(walletData);
@@ -98,7 +98,7 @@ export default function ProfilePage() {
       }
 
       // Fetch Transactions
-      const txRes = await fetch('http://localhost:8000/api/wallet/transactions', { headers });
+      const txRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/transactions', { headers });
       if (txRes.ok) {
         const txData = await txRes.json();
         setTransactions(txData);

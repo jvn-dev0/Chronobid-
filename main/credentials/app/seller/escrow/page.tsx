@@ -29,7 +29,7 @@ export default function SellerEscrowDashboard() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Fetch Escrows for this seller
-      const res = await fetch('http://localhost:8000/api/escrow/seller', { headers });
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/escrow/seller', { headers });
       if (res.ok) {
         setEscrows(await res.json());
       }

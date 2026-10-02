@@ -31,7 +31,7 @@ export default function NotificationsPage() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       // 1. Fetch Backend Notifications
-      const res = await fetch('http://localhost:8000/api/notifications', { headers });
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/notifications', { headers });
       let list: NotificationItem[] = [];
       if (res.ok) {
         list = await res.json();

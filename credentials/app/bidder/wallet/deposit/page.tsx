@@ -45,7 +45,7 @@ export default function DepositPage() {
       // Simulate network delay for realistic "processing" feel
       await new Promise(r => setTimeout(r, 1500));
 
-      const res = await fetch('http://localhost:8000/api/wallet/deposit', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/deposit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

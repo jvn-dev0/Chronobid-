@@ -17,7 +17,7 @@ export default function SettingsPage() {
     const fetchConfig = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:8000/api/admin/settings/', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/settings/', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -36,7 +36,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8000/api/admin/settings/', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/settings/', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,

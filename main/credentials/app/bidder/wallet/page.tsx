@@ -139,25 +139,25 @@ export default function BidderWallet() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Fetch Profile
-      fetch('http://localhost:8000/api/auth/me', { headers })
+      fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/auth/me', { headers })
         .then(res => res.json())
         .then(data => setProfile(data))
         .catch(() => {});
 
       // Fetch Wallet Balance
-      const wRes = await fetch('http://localhost:8000/api/wallet/balance', { headers });
+      const wRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/balance', { headers });
       if (wRes.ok) {
         setWallet(await wRes.json());
       }
 
       // Fetch Escrows
-      const eRes = await fetch('http://localhost:8000/api/escrow/bidder', { headers });
+      const eRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/escrow/bidder', { headers });
       if (eRes.ok) {
         setEscrows(await eRes.json());
       }
 
       // Fetch Transactions
-      const tRes = await fetch('http://localhost:8000/api/wallet/transactions', { headers });
+      const tRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/transactions', { headers });
       if (tRes.ok) {
         const txData = await tRes.json();
         setTransactions(txData);
@@ -180,7 +180,7 @@ export default function BidderWallet() {
     
     try {
       const token = getToken();
-      const res = await fetch(`http://localhost:8000/api/escrow/release/${escrowId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}/api/escrow/release/${escrowId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -263,7 +263,7 @@ export default function BidderWallet() {
 
     try {
       const token = getToken();
-      const res = await fetch('http://localhost:8000/api/wallet/deposit', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/deposit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

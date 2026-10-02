@@ -10,7 +10,7 @@ export default function FraudDetectionPage() {
     const fetchFraudAlerts = async () => {
       try {
         const token = localStorage.getItem('chronobid_token') || localStorage.getItem('token');
-        const res = await fetch('http://localhost:8000/api/admin/auctions/fraud-alerts', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/auctions/fraud-alerts', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {

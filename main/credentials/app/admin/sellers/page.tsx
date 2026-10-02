@@ -10,7 +10,7 @@ export default function SellersPage() {
     const fetchApplications = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:8000/api/admin/users/applications', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/users/applications', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
