@@ -127,6 +127,7 @@ class Auction(Base):
     status = Column(String(50), default="Draft") # Draft, Live, Ended
     
     seller = relationship("Seller", back_populates="auctions")
+    category = relationship("Category")
     item = relationship("AuctionItem", back_populates="auction", uselist=False)
     bids = relationship("Bid", back_populates="auction")
 
@@ -135,7 +136,10 @@ class Auction(Base):
         if self.item and self.item.images:
             # Get the primary image or the first one
             primary = next((img.image_url for img in self.item.images if img.is_primary), None)
-            return primary or self.item.images[0].image_url
+            url = primary or self.item.images[0].image_url
+            if url and url.startswith("/uploads"):
+                return f"http://localhost:8000{url}"
+            return url
         return None
 
 class AuctionItem(Base):

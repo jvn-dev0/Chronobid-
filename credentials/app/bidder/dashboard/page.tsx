@@ -353,11 +353,14 @@ export default function BidderDashboard() {
             {auctions.slice(0, 4).map(auction => {
               const currentBidVal = auction.current_highest_bid || auction.starting_bid || auction.reserve_price || 0;
               const isWatched = watchlist.includes(auction.id);
+              const cardImgUrl = auction.image_url
+                ? (auction.image_url.startsWith('/') && !auction.image_url.startsWith('http') ? `http://localhost:8000${auction.image_url}` : auction.image_url)
+                : '/category-assets/watches.png';
 
               return (
                 <div key={auction.id} className={s.auctionCardLuxury}>
                   <div className={s.cardImgWrap}>
-                    <img src={auction.image_url || '/category-assets/watches.png'} alt={auction.title} className={s.cardImg} />
+                    <img src={cardImgUrl} alt={auction.title} className={s.cardImg} />
                     <span className={s.liveTagBadge}>LIVE</span>
                     <button type="button" className={s.watchlistBtnRound} onClick={() => toggleWatchlist(auction.id)} title="Watchlist">
                       {isWatched ? '♥' : '♡'}

@@ -229,7 +229,8 @@ def list_item_approvals(
                 seller_name = f"{a.seller.user.first_name} {a.seller.user.last_name}".strip() or a.seller.user.username
                 
         # Category Name
-        category_name = a.category.name if a.category else "Uncategorized"
+        cat = a.category if getattr(a, 'category', None) else (db.query(models.Category).filter(models.Category.id == a.category_id).first() if a.category_id else None)
+        category_name = cat.name if cat else "Uncategorized"
         
         # AI Verification & Risk Assessment
         ai_data = a.item.ai_data if a.item and a.item.ai_data else {}
@@ -364,7 +365,7 @@ def get_item_approval_details(
         "title": auction.title,
         "reserve_price": auction.reserve_price,
         "status": auction.status,
-        "category": auction.category.name if auction.category else "Uncategorized",
+        "category": auction.category.name if getattr(auction, 'category', None) else "Uncategorized",
         "seller": seller_data,
         "item": item_data,
         "images": images_list,
