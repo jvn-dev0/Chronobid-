@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Database')))
 import models
 import models_phase2
@@ -10,95 +14,96 @@ from dependencies import get_current_user
 
 router = APIRouter(prefix="/api/admin/users", tags=["Admin Users"])
 
-def require_ops_admin(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+def require_admin_user(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     admin_profile = db.query(models.Admin).filter(models.Admin.user_id == current_user.id).first()
-    if not admin_profile or admin_profile.role_type not in ["super_admin", "ops_admin"]:
-        raise HTTPException(status_code=403, detail="Operations Admin privileges required")
+    if not admin_profile:
+        raise HTTPException(status_code=403, detail="Administrator privileges required")
     return admin_profile
 
-def require_super_admin(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    admin_profile = db.query(models.Admin).filter(models.Admin.user_id == current_user.id).first()
-    if not admin_profile or admin_profile.role_type != "super_admin":
-        raise HTTPException(status_code=403, detail="Super Admin privileges required")
-    return admin_profile
+class ChangeRoleRequest(BaseModel):
+    new_role: str  # "bidder", "seller", "admin"
 
 @router.get("/")
-def get_all_users(admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
-    """ List all registered users (buyers and sellers) """
-    users = db.query(models.User).all()
-    # Join with Seller/Admin profiles if needed to determine role, or just return basic info
+def get_all_users(admin: models.Admin = Depends(require_admin_user), db: Session = Depends(get_db)):
+    """ Returns all registered users directly from Supabase PostgreSQL database """
+    users = db.query(models.User).order_by(models.User.id.asc()).all()
     result = []
+    
     for u in users:
-        role = "Buyer"
-        if u.seller_profile:
+        admin_rec = db.query(models.Admin).filter(models.Admin.user_id == u.id).first()
+        seller_rec = db.query(models.Seller).filter(models.Seller.user_id == u.id).first()
+        
+        role = "Bidder"
+        if admin_rec:
+            role = "Admin"
+        elif seller_rec:
             role = "Seller"
-        if u.admin_profile:
-            role = f"Admin ({u.admin_profile.role_type})"
-            
+
+        kyc_status = "Unverified"
+        if admin_rec:
+            kyc_status = "Verified"
+        elif seller_rec:
+            kyc_status = seller_rec.verification_status or "Pending"
+        else:
+            kyc_status = "Verified"
+
+        reg_date = u.created_at.strftime("%Y-%m-%d") if u.created_at else "2026-01-01"
+
         result.append({
-            "id": u.id, 
-            "name": u.username,
-            "email": u.email, 
-            "role": role, 
-            "status": "Active" if u.is_active else "Suspended",
-            "joinDate": "2024-01-01" # Placeholder date, since created_at might not exist in models.py
+            "id": u.id,
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+            "username": u.username,
+            "email": u.email,
+            "phone": u.phone or "N/A",
+            "role": role,
+            "status": "Active" if u.is_active else "Frozen",
+            "verification_status": kyc_status,
+            "created_at": reg_date
         })
+        
     return result
 
-@router.post("/{user_id}/suspend")
-def suspend_user(user_id: int, admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
+@router.post("/{user_id}/toggle-status")
+def toggle_user_status(user_id: int, admin: models.Admin = Depends(require_admin_user), db: Session = Depends(get_db)):
+    """ Freezes or unfreezes a user account in database """
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    user.is_active = False
-    
-    # Log the action
-    audit_log = models_phase2.AuditLog(
-        admin_id=admin.id,
-        action="SUSPEND_USER",
-        target_table="users",
-        target_id=user.id
-    )
-    db.add(audit_log)
-    db.commit()
-    
-    return {"message": f"User {user_id} suspended successfully"}
-
-@router.get("/applications")
-def get_seller_applications(admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
-    """ List all pending seller applications """
-    sellers = db.query(models.Seller).filter(models.Seller.verification_status.in_(["Pending", "Pending_Review"])).all()
-    
-    result = []
-    for s in sellers:
-        user = db.query(models.User).filter(models.User.id == s.user_id).first()
-        result.append({
-            "id": s.id,
-            "shopName": s.shop_name,
-            "applicant": user.username if user else "Unknown",
-            "email": user.email if user else "Unknown",
-            "status": s.verification_status,
-            "submissionDate": "2024-01-01",
-            "aiConfidence": 94,
-            "documentUrl": s.id_document_url
-        })
-    return result
-
-@router.post("/applications/{seller_id}/approve")
-def approve_seller(seller_id: int, admin: models.Admin = Depends(require_ops_admin), db: Session = Depends(get_db)):
-    seller = db.query(models.Seller).filter(models.Seller.id == seller_id).first()
-    if not seller:
-        raise HTTPException(status_code=404, detail="Seller application not found")
         
-    seller.verification_status = "Approved"
-    
-    user = db.query(models.User).filter(models.User.id == seller.user_id).first()
-    if user:
-        # Assign Seller role
-        user_role = db.query(models.UserRole).filter(models.UserRole.name == "seller").first()
-        if user_role:
-            user.role_id = user_role.id
-            
+    # Toggle status
+    user.is_active = not user.is_active
     db.commit()
-    return {"message": f"Seller {seller_id} approved successfully"}
+    
+    status_str = "Active" if user.is_active else "Frozen"
+    return {"message": f"User #{user_id} account is now {status_str}", "status": status_str, "is_active": user.is_active}
+
+@router.post("/{user_id}/change-role")
+def change_user_role(user_id: int, req: ChangeRoleRequest, admin: models.Admin = Depends(require_admin_user), db: Session = Depends(get_db)):
+    """ Updates user role in database (Bidder, Seller, Admin) """
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    target_role = req.new_role.lower()
+    
+    if target_role == "admin":
+        admin_rec = db.query(models.Admin).filter(models.Admin.user_id == user_id).first()
+        if not admin_rec:
+            admin_rec = models.Admin(user_id=user_id, role_type="ops_admin")
+            db.add(admin_rec)
+    elif target_role == "seller":
+        seller_rec = db.query(models.Seller).filter(models.Seller.user_id == user_id).first()
+        if not seller_rec:
+            seller_rec = models.Seller(user_id=user_id, verification_status="Approved")
+            db.add(seller_rec)
+        else:
+            seller_rec.verification_status = "Approved"
+    elif target_role == "bidder":
+        # Remove admin profile if converting back to bidder
+        admin_rec = db.query(models.Admin).filter(models.Admin.user_id == user_id).first()
+        if admin_rec and user_id != admin.user_id:  # Do not allow demoting self
+            db.delete(admin_rec)
+
+    db.commit()
+    return {"message": f"User #{user_id} role updated to {target_role.capitalize()}", "new_role": target_role.capitalize()}
