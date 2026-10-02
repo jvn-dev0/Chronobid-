@@ -73,13 +73,42 @@ def place_bid(
     
     return new_bid
 
-from typing import List
-@router.get("/my-bids", response_model=List[schemas.BidResponse])
+@router.get("/my-bids")
 def get_my_bids(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """ Get all bids placed by the logged-in buyer """
     buyer_profile = db.query(models.Buyer).filter(models.Buyer.user_id == current_user.id).first()
-    if not buyer_profile:
-        raise HTTPException(status_code=403, detail="Only buyers have bids")
+    buyer_id = buyer_profile.id if buyer_profile else current_user.id
 
-    my_bids = db.query(models.Bid).filter(models.Bid.buyer_id == buyer_profile.id).order_by(models.Bid.timestamp.desc()).all()
-    return my_bids
+    my_bids = db.query(models.Bid).filter(models.Bid.buyer_id == buyer_id).order_by(models.Bid.timestamp.desc()).all()
+    
+    result = []
+    for b in my_bids:
+        auction = db.query(models.Auction).filter(models.Auction.id == b.auction_id).first()
+        highest_bid_rec = db.query(models.Bid).filter(models.Bid.auction_id == b.auction_id).order_by(models.Bid.bid_amount.desc()).first()
+        highest_val = highest_bid_rec.bid_amount if highest_bid_rec else (auction.reserve_price if auction else b.bid_amount)
+        
+        seller_name = "ChronoBid Verified Seller"
+        if auction:
+            seller = db.query(models.Seller).filter(models.Seller.id == auction.seller_id).first()
+            if seller:
+                seller_user = db.query(models.User).filter(models.User.id == seller.user_id).first()
+                if seller_user:
+                    seller_name = f"{seller_user.first_name} {seller_user.last_name}".strip()
+
+        date_str = b.timestamp.strftime("%b %d, %Y") if b.timestamp else "Oct 1, 2026"
+        is_winning = (highest_bid_rec and highest_bid_rec.buyer_id == buyer_id)
+        
+        result.append({
+            "id": b.id,
+            "auction_id": b.auction_id,
+            "title": auction.title if auction else "Vintage Watch",
+            "seller_name": seller_name,
+            "my_bid": b.bid_amount,
+            "highest_bid": highest_val,
+            "date": date_str,
+            "status": "Winning" if is_winning else "Outbid",
+            "image_url": auction.image_url if (auction and auction.image_url) else "/uploads/download (3).jpg"
+        })
+        
+    return result
+

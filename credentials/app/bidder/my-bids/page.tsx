@@ -1,52 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import s from './my-bids.module.css';
-
-const mockBids = [
-  {
-    id: 1,
-    title: 'Patek Philippe Nautilus',
-    seller: 'Swiss Luxury Vault',
-    my_bid: 12500,
-    highest_bid: 12500,
-    date: 'Jul 31, 2026',
-    status: 'Won',
-    image: 'https://images.unsplash.com/photo-1548171915-e7af55099cb3?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 2,
-    title: 'Rolex Submariner',
-    seller: 'Timepiece Classics',
-    my_bid: 4100,
-    highest_bid: 4200,
-    date: 'Aug 1, 2026',
-    status: 'Outbid',
-    image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 3,
-    title: 'Omega Speedmaster 1957',
-    seller: 'Vintage Finds',
-    my_bid: 8200,
-    highest_bid: 8200,
-    date: 'Aug 1, 2026',
-    status: 'Winning',
-    image: 'https://images.unsplash.com/photo-1622434641406-a158123450f9?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 4,
-    title: 'Audemars Piguet Royal Oak',
-    seller: 'Geneva Horology',
-    my_bid: 28000,
-    highest_bid: 35000,
-    date: 'Jul 28, 2026',
-    status: 'Lost',
-    image: 'https://images.unsplash.com/photo-1587836374828-cb4387d59d42?auto=format&fit=crop&q=80&w=400'
-  }
-];
+import { getToken } from '../../../lib/api';
 
 export default function MyBidsPage() {
+  const [bids, setBids] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMyBids();
+  }, []);
+
+  const fetchMyBids = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        setBids([]);
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch('http://localhost:8000/api/bids/my-bids', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBids(Array.isArray(data) ? data : []);
+      } else {
+        setBids([]);
+      }
+    } catch {
+      setBids([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={s.pageContainer}>
       <div className={s.header}>
@@ -54,46 +45,72 @@ export default function MyBidsPage() {
         <p className={s.subtitle}>Track all the bids you have placed across ChronoBid.</p>
       </div>
 
-      <div className={s.tableSection}>
-        <table className={s.table}>
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>My Bid</th>
-              <th>Highest Bid</th>
-              <th>Date Placed</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockBids.map(bid => (
-              <tr key={bid.id}>
-                <td>
-                  <div className={s.itemCol}>
-                    <img src={bid.image} className={s.itemImg} alt="Watch" />
-                    <div>
-                      <div className={s.itemTitle}>{bid.title}</div>
-                      <div className={s.itemSeller}>by {bid.seller}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className={s.amount}>${bid.my_bid.toLocaleString()}</td>
-                <td className={s.highestBid}>${bid.highest_bid.toLocaleString()}</td>
-                <td className={s.date}>{bid.date}</td>
-                <td>
-                  <span className={`${s.badge} ${
-                    bid.status === 'Winning' ? s.badgeWinning :
-                    bid.status === 'Outbid' ? s.badgeOutbid :
-                    bid.status === 'Won' ? s.badgeWon : s.badgeLost
-                  }`}>
-                    {bid.status}
-                  </span>
-                </td>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '4rem', color: '#6b7280' }}>
+          Loading your bid history...
+        </div>
+      ) : bids.length === 0 ? (
+        <div className={s.emptyContainer}>
+          <div className={s.emptyIconWrapper}>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h2 className={s.emptyTitle}>No Bids Placed Yet</h2>
+          <p className={s.emptySubtitle}>
+            You haven't placed any bids on active auctions yet. Once you place a bid, your active bids, highest bids, and auction outcomes will be tracked here in real-time.
+          </p>
+          <Link href="/bidder/live" className={s.exploreBtn}>
+            Explore Live Auctions
+          </Link>
+        </div>
+      ) : (
+        <div className={s.tableSection}>
+          <table className={s.table}>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>My Bid</th>
+                <th>Highest Bid</th>
+                <th>Date Placed</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {bids.map(bid => (
+                <tr key={bid.id || bid.auction_id}>
+                  <td>
+                    <div className={s.itemCol}>
+                      <img src={bid.image_url || '/category-assets/watches.png'} className={s.itemImg} alt="Auction Lot" />
+                      <div>
+                        <div className={s.itemTitle}>{bid.title || bid.auction_title || 'Auction Lot'}</div>
+                        <div className={s.itemSeller}>by {bid.seller_name || 'ChronoBid Verified Seller'}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className={s.amount}>${(bid.bid_amount || bid.my_bid || 0).toLocaleString()}</td>
+                  <td className={s.highestBid}>${(bid.highest_bid || bid.current_highest_bid || bid.bid_amount || 0).toLocaleString()}</td>
+                  <td className={s.date}>{bid.date || 'Recent'}</td>
+                  <td>
+                    <span className={`${s.badge} ${
+                      bid.status === 'Winning' || bid.is_highest ? s.badgeWinning :
+                      bid.status === 'Outbid' ? s.badgeOutbid :
+                      bid.status === 'Won' ? s.badgeWon : s.badgeLost
+                    }`}>
+                      {bid.status || (bid.is_highest ? 'Winning' : 'Outbid')}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
+

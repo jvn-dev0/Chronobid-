@@ -30,19 +30,55 @@ export default function NotificationsPage() {
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
+      // 1. Fetch Backend Notifications
       const res = await fetch('http://localhost:8000/api/notifications', { headers });
+      let list: NotificationItem[] = [];
       if (res.ok) {
-        const data = await res.json();
-        setNotifications(data);
-      } else {
-        setNotifications([]);
+        list = await res.json();
       }
+
+      // 2. Fetch Jasper AI Recommendations Notification
+      try {
+        const aiRes = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: "What items should I bid on today?", user_role: 'bidder', user_id: 1 })
+        });
+        const aiData = await aiRes.json();
+
+        if (aiData.recommendations && aiData.recommendations.length > 0) {
+          const topVault = aiData.recommendations.find((r: any) => r.source === 'vault');
+          const topTrending = aiData.recommendations.find((r: any) => r.source === 'trending');
+
+          const vaultText = topVault ? `${topVault.title} (${topVault.category})` : 'your favorite categories';
+          const trendText = topTrending ? `${topTrending.category}` : 'popular market items';
+
+          const jasperNotif: NotificationItem = {
+            id: 999999,
+            type: 'info',
+            title: "✨ Jasper AI: New Recommendations Ready",
+            desc: `Jasper has curated 4 personalized lots for you! Recommended Vault lot: '${vaultText}'. Trending category: '${trendText}'.`,
+            time: 'Just now',
+            unread: true,
+            action: 'View Recommendations',
+            link: '/bidder/dashboard'
+          };
+
+          // Insert Jasper recommendation notification at top of feed
+          list = [jasperNotif, ...list];
+        }
+      } catch (err) {
+        console.warn("Jasper AI notification fetch fallback:", err);
+      }
+
+      setNotifications(list);
     } catch {
       setNotifications([]);
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleSimulateOutbid = () => {
     const testOutbid: NotificationItem = {

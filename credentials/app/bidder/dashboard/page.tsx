@@ -52,6 +52,7 @@ export default function BidderDashboard() {
   const [isJasperOpen, setIsJasperOpen] = useState(false);
   const [jasperInput, setJasperInput] = useState('');
   const [jasperReply, setJasperReply] = useState('');
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   const [isJasperLoading, setIsJasperLoading] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -61,7 +62,6 @@ export default function BidderDashboard() {
     const textToAsk = customPrompt || jasperInput;
     if (!textToAsk.trim()) return;
     setIsJasperLoading(true);
-    setJasperReply('');
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -69,13 +69,17 @@ export default function BidderDashboard() {
         body: JSON.stringify({ message: textToAsk, user_role: 'bidder', user_id: profile.id || 1 })
       });
       const data = await res.json();
-      setJasperReply(data.answer);
+      setJasperReply(data.jasper_reply || data.answer || "");
+      if (data.recommendations && data.recommendations.length > 0) {
+        setAiRecommendations(data.recommendations);
+      }
       if (!customPrompt) setJasperInput('');
     } catch {
-      setJasperReply("Sorry, Jasper is offline. Please try asking again.");
+      setJasperReply("Good day, sir/madam. Jasper is currently offline. Please try asking again shortly.");
     }
     setIsJasperLoading(false);
   };
+
 
   useEffect(() => {
     fetchData();
@@ -105,11 +109,26 @@ export default function BidderDashboard() {
       if (!res.ok) throw new Error('Failed to fetch live auctions');
       const data = await res.json();
       setAuctions(data);
+
+      // Fetch JasperBot Two-Source AI Recommendations
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "What items should I bid on today?", user_role: 'bidder', user_id: 1 })
+      })
+      .then(r => r.json())
+      .then(aiData => {
+        if (aiData.recommendations && aiData.recommendations.length > 0) {
+          setAiRecommendations(aiData.recommendations);
+        }
+      })
+      .catch(() => {});
     } catch (err: any) {
       setError(err.message || 'An error occurred while fetching auctions.');
     } finally {
       setLoading(false);
     }
+
   };
 
   const toggleWatchlist = (auctionId: number) => {
@@ -520,26 +539,40 @@ export default function BidderDashboard() {
         </div>
       </section>
 
-      {/* ════ 10. RECOMMENDED FOR YOU ════ */}
+      {/* ════ 10. RECOMMENDED FOR YOU (POWERED BY JASPERBOT AI) ════ */}
       <section className={s.sectionBlock}>
         <div className={s.sectionHeaderRow}>
           <div className={s.sectionHeadingGroup}>
-            <h2 className={s.sectionTitle}>Recommended for You</h2>
-            <p className={s.sectionSubtitle}>Personalized recommendations tailored to your collecting preferences.</p>
+            <h2 className={s.sectionTitle}>✨ Recommended by Jasper AI</h2>
+            <p className={s.sectionSubtitle}>Smart recommendations merged from your personal Vault activity and live Market Trending activity.</p>
           </div>
         </div>
 
-        {isNewUser ? (
-          <div style={{ background: '#0B1A36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '36px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '18px', fontWeight: 700 }}>Your collection journey starts here.</h4>
-            <p style={{ margin: 0, color: '#9AA6B8', fontSize: '13.5px', maxWidth: '440px' }}>
-              Explore a few live auctions and we'll personalize recommendations based on your favorite categories.
-            </p>
-            <Link href="/bidder/live" className={s.btnPrimaryGold} style={{ marginTop: '8px' }}>
-              Explore Auctions ➔
-            </Link>
+        {aiRecommendations.length > 0 ? (
+          <div className={s.auctionsGrid4}>
+            {aiRecommendations.map(item => (
+              <div key={item.item_id} className={s.auctionCardLuxury} style={{ position: 'relative' }}>
+                <div className={s.cardImgWrap} style={{ height: '160px' }}>
+                  <img src={`/category-assets/${item.category || 'watches'}.png`} alt={item.title} className={s.cardImg} onError={(e: any) => { e.target.src = '/category-assets/watches.png'; }} />
+                  <span className={s.liveTagBadge} style={{ background: item.source === 'vault' ? '#d97706' : '#2563eb' }}>
+                    {item.source === 'vault' ? 'VAULT MATCH' : 'MARKET TRENDING'}
+                  </span>
+                </div>
+                <div className={s.cardBody}>
+                  <span className={s.cardCategoryText}>{item.category?.toUpperCase()} • {item.affordable ? 'IN BUDGET' : 'ESCROW REQ'}</span>
+                  <h4 className={s.cardLotTitle}>{item.title}</h4>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 10px 0', lineHeight: '1.4', height: '32px', overflow: 'hidden' }}>
+                    {item.reason}
+                  </p>
+                  <div className={s.cardMetricsRow}>
+                    <span className={s.bidValText}>${item.price?.toLocaleString()}</span>
+                    <Link href={`/bidder/live`} className={s.bidCtaBtn}>Bid ➔</Link>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
+        ) : auctions.length > 0 ? (
           <div className={s.auctionsGrid4}>
             {auctions.slice(0, 4).map(auction => (
               <div key={auction.id} className={s.auctionCardLuxury}>
@@ -557,8 +590,19 @@ export default function BidderDashboard() {
               </div>
             ))}
           </div>
+        ) : (
+          <div style={{ background: '#0B1A36', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '36px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '18px', fontWeight: 700 }}>Your collection journey starts here.</h4>
+            <p style={{ margin: 0, color: '#9AA6B8', fontSize: '13.5px', maxWidth: '440px' }}>
+              Explore a few live auctions and Jasper AI will personalize recommendations based on your favorite categories.
+            </p>
+            <Link href="/bidder/live" className={s.btnPrimaryGold} style={{ marginTop: '8px' }}>
+              Explore Auctions ➔
+            </Link>
+          </div>
         )}
       </section>
+
 
       {/* ════ 11. COMPACT LUXURY FOOTER ════ */}
       <footer className={s.footerSection}>

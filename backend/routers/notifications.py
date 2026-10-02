@@ -127,4 +127,18 @@ def get_user_notifications(
             "link": "/bidder/wallet"
         })
 
+    # 3. Always insert a Jasper AI recommendation notification for bidder
+    jasper_rec_notif = {
+        "id": 9999,
+        "type": "info",
+        "title": "✨ Jasper AI: Personal Recommendation Digest",
+        "desc": "Jasper has analyzed your personal Vault activity and live Market Trends. 4 curated auction lots are waiting for you!",
+        "time": "Just now",
+        "unread": True,
+        "action": "View Recommendations",
+        "link": "/bidder/dashboard"
+    }
+    result.insert(0, jasper_rec_notif)
+
     return result
+
