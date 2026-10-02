@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 
+import { getAdminSession, logoutAdmin, ADMIN_CONFIG } from '../../lib/auth';
+
 interface ItemApproval {
   id: number;
   title: string;
@@ -69,10 +71,23 @@ export default function ItemApprovalPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  const getAuthToken = () => {
+    if (typeof window === 'undefined') return null;
+    return (
+      localStorage.getItem('chronobid_admin_token') ||
+      localStorage.getItem('admin_token')
+    );
+  };
+
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAuthToken();
+      if (!token) {
+        window.location.href = '/';
+        return;
+      }
+
       const queryParams = new URLSearchParams({
         status_filter: statusFilter,
         risk_filter: riskFilter,
@@ -119,7 +134,7 @@ export default function ItemApprovalPage() {
     setActiveImageIndex(0);
     setReviewComments('');
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAuthToken();
       const res = await fetch(`http://localhost:8000/api/admin/item-approval/${itemId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -139,7 +154,7 @@ export default function ItemApprovalPage() {
   const handleDecision = async (auctionId: number, action: 'approve' | 'reject') => {
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAuthToken();
       const res = await fetch('http://localhost:8000/api/admin/approve-auction', {
         method: 'POST',
         headers: {
