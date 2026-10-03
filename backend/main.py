@@ -50,6 +50,23 @@ async def global_exception_handler(request, exc: Exception):
         }
     )
 
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from database import get_db
+
+@app.get("/api/version")
+def get_version():
+    return {"version": "1.0.1", "commit": "diagnostic-v1"}
+
+@app.get("/api/db-test")
+def db_test(db: Session = Depends(get_db)):
+    try:
+        from sqlalchemy import text
+        res = db.execute(text("SELECT count(*) FROM users")).fetchone()
+        return {"status": "connected", "user_count": res[0]}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "type": type(e).__name__}
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to ChronoBid Core Backend API! System is online."}
