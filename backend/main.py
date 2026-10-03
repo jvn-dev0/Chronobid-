@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
@@ -36,6 +37,18 @@ app.include_router(admin_system.router)
 app.include_router(seller.router)
 app.include_router(escrow.router)
 app.include_router(notifications.router)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc: Exception):
+    import traceback
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": str(exc),
+            "type": type(exc).__name__,
+            "traceback": traceback.format_exc()
+        }
+    )
 
 @app.get("/")
 def read_root():
