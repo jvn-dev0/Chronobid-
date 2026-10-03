@@ -75,7 +75,7 @@ export default function PowerAdminAIVerificationPage() {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/admin/auctions/ai-reports', {
+      const res = await fetch('https://chronobid-backend.onrender.com/api/admin/auctions/ai-reports', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

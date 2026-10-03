@@ -96,7 +96,7 @@ export default function ItemApprovalPage() {
         queryParams.append('search', searchQuery.trim());
       }
 
-      const res = await fetch(`http://localhost:8000/api/admin/item-approval/list?${queryParams.toString()}`, {
+      const res = await fetch(`https://chronobid-backend.onrender.com/api/admin/item-approval/list?${queryParams.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -135,7 +135,7 @@ export default function ItemApprovalPage() {
     setReviewComments('');
     try {
       const token = getAuthToken();
-      const res = await fetch(`http://localhost:8000/api/admin/item-approval/${itemId}`, {
+      const res = await fetch(`https://chronobid-backend.onrender.com/api/admin/item-approval/${itemId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -155,7 +155,7 @@ export default function ItemApprovalPage() {
     setActionLoading(true);
     try {
       const token = getAuthToken();
-      const res = await fetch('http://localhost:8000/api/admin/approve-auction', {
+      const res = await fetch('https://chronobid-backend.onrender.com/api/admin/approve-auction', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

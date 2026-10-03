@@ -72,7 +72,7 @@ export default function PowerAdminFinancePage() {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/admin/finance/transactions', {
+      const res = await fetch('https://chronobid-backend.onrender.com/api/admin/finance/transactions', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

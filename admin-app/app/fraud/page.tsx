@@ -74,7 +74,7 @@ export default function PowerAdminFraudPage() {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/admin/auctions/fraud-alerts', {
+      const res = await fetch('https://chronobid-backend.onrender.com/api/admin/auctions/fraud-alerts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

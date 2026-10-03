@@ -1,5 +1,5 @@
 export const ADMIN_CONFIG = {
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || "https://chronobid-backend.onrender.com",
   backgroundImagePath: "/images/admin-login-background.jpg",
   tokenKey: "chronobid_admin_token",
   userKey: "chronobid_admin_user",

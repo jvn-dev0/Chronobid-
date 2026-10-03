@@ -78,7 +78,7 @@ export default function PowerAdminAuctionsPage() {
         queryParams.append('search', searchQuery.trim());
       }
 
-      const res = await fetch(`http://localhost:8000/api/admin/auctions/manage?${queryParams.toString()}`, {
+      const res = await fetch(`https://chronobid-backend.onrender.com/api/admin/auctions/manage?${queryParams.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -115,7 +115,7 @@ export default function PowerAdminAuctionsPage() {
     setModalLoading(true);
     try {
       const token = getAuthToken();
-      const res = await fetch(`http://localhost:8000/api/admin/auctions/${auctionId}/inspect`, {
+      const res = await fetch(`https://chronobid-backend.onrender.com/api/admin/auctions/${auctionId}/inspect`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -135,7 +135,7 @@ export default function PowerAdminAuctionsPage() {
     setControlLoading(true);
     try {
       const token = getAuthToken();
-      const res = await fetch(`http://localhost:8000/api/admin/auctions/${auctionId}/control?action=${action}&days=${days}`, {
+      const res = await fetch(`https://chronobid-backend.onrender.com/api/admin/auctions/${auctionId}/control?action=${action}&days=${days}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

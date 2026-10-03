@@ -58,7 +58,7 @@ export default function PowerAdminSettingsPage() {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/admin/settings/', {
+      const res = await fetch('https://chronobid-backend.onrender.com/api/admin/settings/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -102,7 +102,7 @@ export default function PowerAdminSettingsPage() {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/admin/settings/', {
+      const res = await fetch('https://chronobid-backend.onrender.com/api/admin/settings/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
