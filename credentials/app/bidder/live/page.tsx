@@ -44,7 +44,7 @@ export default function LiveAuctionsPage() {
   const fetchLiveAuctions = async () => {
     try {
       const token = getToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/auctions/live', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/auctions/live', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -62,7 +62,7 @@ export default function LiveAuctionsPage() {
     try {
       const token = getToken();
       if (!token) return;
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/balance', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/wallet/balance', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -119,7 +119,7 @@ export default function LiveAuctionsPage() {
 
     try {
       const token = getToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/bids/place', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/bids/place', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -219,14 +219,14 @@ export default function LiveAuctionsPage() {
 
                   {auction.image_url ? (
                     <img 
-                      src={auction.image_url.startsWith('http') ? auction.image_url : `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
+                      src={auction.image_url.startsWith('http') ? auction.image_url : `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + ''}${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
                       alt={auction.title} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                       onError={(e) => {
                         const target = e.currentTarget;
                         const filename = auction.image_url?.split('/').pop() || '';
                         if (filename && !target.src.endsWith(filename)) {
-                          target.src = `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}/uploads/${filename}`;
+                          target.src = `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + ''}/uploads/${filename}`;
                         }
                       }}
                     />

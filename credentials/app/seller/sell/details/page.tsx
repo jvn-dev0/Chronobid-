@@ -68,7 +68,7 @@ export default function SellDetails() {
     }
 
     // Fetch dynamic fee rules from backend
-    fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/fee-config')
+    fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/fee-config')
       .then(res => res.json())
       .then(data => {
         if (data && typeof data.commission_percentage === 'number') {

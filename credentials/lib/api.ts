@@ -1,10 +1,10 @@
 // ─────────────────────────────────────────────────────────
 // ChronoBid API Service
 // Connects the frontend to the FastAPI backend
-// Backend runs on: http://localhost:8000
+// Backend runs on: https://chronobid-backend.onrender.com
 // ─────────────────────────────────────────────────────────
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com';
 
 // ── Types ──────────────────────────────────────────────────
 export interface RegisterPayload {

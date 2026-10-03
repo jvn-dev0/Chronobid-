@@ -19,7 +19,7 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
       router.push('/login');
     } else {
       // Fetch user profile for the top right with fallback
-      fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/auth/me', {
+      fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {

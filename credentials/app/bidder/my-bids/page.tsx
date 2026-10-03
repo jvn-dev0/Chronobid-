@@ -22,7 +22,7 @@ export default function MyBidsPage() {
         return;
       }
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/bids/my-bids', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/bids/my-bids', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

@@ -116,19 +116,19 @@ export default function BidderDashboard() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Fetch Profile
-      fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/auth/me', { headers })
+      fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/auth/me', { headers })
         .then(res => res.json())
         .then(data => setProfile(data))
         .catch(() => {});
 
       // Fetch Wallet
-      fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/wallet/balance', { headers })
+      fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/wallet/balance', { headers })
         .then(res => res.json())
         .then(data => setWallet(data))
         .catch(() => {});
 
       // Fetch Live Auctions
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/auctions/live', { headers });
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/auctions/live', { headers });
       if (!res.ok) throw new Error('Failed to fetch live auctions');
       const data = await res.json();
       setAuctions(data);
@@ -397,7 +397,7 @@ export default function BidderDashboard() {
               const currentBidVal = auction.current_highest_bid || auction.starting_bid || auction.reserve_price || 0;
               const isWatched = watchlist.includes(auction.id);
               const cardImgUrl = auction.image_url
-                ? (auction.image_url.startsWith('/') && !auction.image_url.startsWith('http') ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}${auction.image_url}` : auction.image_url)
+                ? (auction.image_url.startsWith('/') && !auction.image_url.startsWith('http') ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + ''}${auction.image_url}` : auction.image_url)
                 : '/category-assets/watches.png';
 
               return (

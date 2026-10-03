@@ -253,7 +253,7 @@ export default function SellerApplicationPage() {
     const loadSavedApplication = async () => {
       try {
         setInitialLoading(true);
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -487,7 +487,7 @@ export default function SellerApplicationPage() {
     const token = getToken();
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}${endpoint}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + ''}${endpoint}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -506,7 +506,7 @@ export default function SellerApplicationPage() {
     if (urlOrData.startsWith('data:') || urlOrData.startsWith('blob:') || urlOrData.startsWith('http://') || urlOrData.startsWith('https://')) {
       return urlOrData;
     }
-    return `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + ''}${urlOrData}`;
+    return `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + ''}${urlOrData}`;
   };
 
   // ── Document Upload (Step 4) ────────────────────────────────
@@ -702,7 +702,7 @@ export default function SellerApplicationPage() {
         selfie_url: form.selfie_url,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-4/verify', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-4/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -776,7 +776,7 @@ export default function SellerApplicationPage() {
         selfie_url: form.selfie_url,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-4', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-4', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -912,7 +912,7 @@ export default function SellerApplicationPage() {
         postal_code: form.postal_code.trim(),
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-3', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-3', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -937,7 +937,7 @@ export default function SellerApplicationPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error connecting to database.';
       if (msg === 'Failed to fetch' || msg.includes('fetch')) {
-        setErrorBanner(['Unable to connect to the backend server (http://localhost:8000). Please ensure the backend is running.']);
+        setErrorBanner(['Unable to connect to the backend server (https://chronobid-backend.onrender.com). Please ensure the backend is running.']);
       } else {
         setErrorBanner([msg]);
       }
@@ -980,7 +980,7 @@ export default function SellerApplicationPage() {
     setSendingOtp(true);
     try {
       const token = getToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/contact/send-otp', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/contact/send-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1020,7 +1020,7 @@ export default function SellerApplicationPage() {
     try {
       const token = getToken();
       const normalizedE164 = `${selectedPhoneCountry.dialCode}${localPhoneNumber.replace(/\D/g, '')}`;
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/contact/verify-otp', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/contact/verify-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1075,7 +1075,7 @@ export default function SellerApplicationPage() {
         phone_verified: true,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-5', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-5', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1115,7 +1115,7 @@ export default function SellerApplicationPage() {
     setVerifyingIfsc(true);
     try {
       const token = getToken();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-6/verify-ifsc', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-6/verify-ifsc', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1188,7 +1188,7 @@ export default function SellerApplicationPage() {
         bank_account_type: form.bank_account_type,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-6/verify', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-6/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1254,7 +1254,7 @@ export default function SellerApplicationPage() {
         bank_verified: true,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/step-6', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/step-6', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1319,7 +1319,7 @@ export default function SellerApplicationPage() {
         bank_account_type: form.bank_account_type,
       };
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/seller/application/final-submit', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/seller/application/final-submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -10,7 +10,7 @@ export default function FinancePage() {
     const fetchTransactions = async () => {
       try {
         const token = localStorage.getItem('chronobid_token') || localStorage.getItem('token');
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/admin/finance/transactions', {
+        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + '/api/admin/finance/transactions', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
