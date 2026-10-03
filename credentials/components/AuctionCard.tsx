@@ -38,7 +38,7 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
       <div style={{ height: '200px', background: '#21262d', position: 'relative' }}>
         {auction.image_url ? (
           <img 
-            src={auction.image_url.startsWith('http') ? auction.image_url : `https://chronobid-backend.onrender.com${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
+            src={auction.image_url.startsWith('http') || auction.image_url.startsWith('/category-assets/') ? auction.image_url : `https://chronobid-backend.onrender.com${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
             alt={auction.title} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             onError={(e) => {

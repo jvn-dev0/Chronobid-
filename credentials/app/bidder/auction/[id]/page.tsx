@@ -186,7 +186,7 @@ export default function BiddingPage() {
             
             {auction.image_url ? (
               <img 
-                src={auction.image_url.startsWith('http') ? auction.image_url : `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com') + ''}${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
+                src={auction.image_url.startsWith('http') || auction.image_url.startsWith('/category-assets/') ? auction.image_url : `${process.env.NEXT_PUBLIC_API_URL || 'https://chronobid-backend.onrender.com'}${auction.image_url.startsWith('/') ? '' : '/'}${auction.image_url}`} 
                 alt={auction.title} 
                 className={s.mainImage} 
                 onError={(e) => {
