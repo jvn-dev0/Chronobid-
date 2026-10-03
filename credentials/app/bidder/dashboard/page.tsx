@@ -402,8 +402,26 @@ export default function BidderDashboard() {
 
               return (
                 <div key={auction.id} className={s.auctionCardLuxury}>
-                  <div className={s.cardImgWrap}>
-                    <img src={cardImgUrl} alt={auction.title} className={s.cardImg} />
+                    <img 
+                      src={cardImgUrl} 
+                      alt={auction.title} 
+                      className={s.cardImg} 
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        const text = (auction.title || auction.category || '').toLowerCase();
+                        if (text.includes('jewel') || text.includes('gold') || text.includes('ring') || text.includes('islamic') || text.includes('diamond')) {
+                          target.src = '/category-assets/jewellery.png';
+                        } else if (text.includes('art') || text.includes('paint') || text.includes('canvas')) {
+                          target.src = '/category-assets/art.png';
+                        } else if (text.includes('coin') || text.includes('currency')) {
+                          target.src = '/category-assets/coins.png';
+                        } else if (text.includes('car') || text.includes('auto')) {
+                          target.src = '/category-assets/automobiles.png';
+                        } else {
+                          target.src = '/category-assets/watches.png';
+                        }
+                      }}
+                    />
                     <span className={s.liveTagBadge}>LIVE</span>
                     <button type="button" className={s.watchlistBtnRound} onClick={() => toggleWatchlist(auction.id)} title="Watchlist">
                       {isWatched ? '♥' : '♡'}

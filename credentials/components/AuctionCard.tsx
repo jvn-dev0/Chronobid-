@@ -43,9 +43,17 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             onError={(e) => {
               const target = e.currentTarget;
-              const filename = auction.image_url?.split('/').pop() || '';
-              if (filename && !target.src.endsWith(filename)) {
-                target.src = `https://chronobid-backend.onrender.com/uploads/${filename}`;
+              const text = (auction.title || '').toLowerCase();
+              if (text.includes('jewel') || text.includes('gold') || text.includes('ring') || text.includes('islamic') || text.includes('diamond')) {
+                target.src = '/category-assets/jewellery.png';
+              } else if (text.includes('art') || text.includes('paint') || text.includes('canvas')) {
+                target.src = '/category-assets/art.png';
+              } else if (text.includes('coin') || text.includes('currency')) {
+                target.src = '/category-assets/coins.png';
+              } else if (text.includes('car') || text.includes('auto')) {
+                target.src = '/category-assets/automobiles.png';
+              } else {
+                target.src = '/category-assets/watches.png';
               }
             }}
           />

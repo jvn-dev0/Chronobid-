@@ -79,8 +79,10 @@ def get_admin_dashboard_metrics(admin: models.Admin = Depends(require_admin), db
             status_label = "Needs Review"
             
         submitted_str = "Recent"
-        if a.created_at:
-            hours_ago = int((datetime.utcnow() - a.created_at).total_seconds() // 3600)
+        created_val = getattr(a, 'created_at', getattr(a, 'start_time', None))
+        if created_val:
+            dt = created_val.replace(tzinfo=None) if hasattr(created_val, 'tzinfo') and created_val.tzinfo is not None else created_val
+            hours_ago = int((datetime.utcnow() - dt).total_seconds() // 3600)
             submitted_str = f"{hours_ago}h ago" if hours_ago > 0 else "Just now"
 
         item_approvals.append({
@@ -261,8 +263,10 @@ def list_item_approvals(
             continue
 
         submitted_str = "Recent"
-        if hasattr(a, 'created_at') and a.created_at:
-            hours_ago = int((datetime.utcnow() - a.created_at).total_seconds() // 3600)
+        created_val = getattr(a, 'created_at', getattr(a, 'start_time', None))
+        if created_val:
+            dt = created_val.replace(tzinfo=None) if hasattr(created_val, 'tzinfo') and created_val.tzinfo is not None else created_val
+            hours_ago = int((datetime.utcnow() - dt).total_seconds() // 3600)
             submitted_str = f"{hours_ago}h ago" if hours_ago > 0 else "Just now"
 
         # Image URL
