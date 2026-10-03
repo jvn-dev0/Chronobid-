@@ -138,7 +138,8 @@ class Auction(Base):
             primary = next((img.image_url for img in self.item.images if img.is_primary), None)
             url = primary or self.item.images[0].image_url
             if url and url.startswith("/uploads"):
-                return f"http://localhost:8000{url}"
+                base_url = os.getenv("NEXT_PUBLIC_API_URL") or "https://chronobid-backend.onrender.com"
+                return f"{base_url}{url}"
             return url
         return None
 

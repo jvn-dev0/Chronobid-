@@ -414,3 +414,60 @@ def admin_login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
         "last_name": user.last_name,
         "email": user.email
     }
+
+
+from pydantic import BaseModel
+from typing import Optional
+
+class ApproveAuctionPayload(BaseModel):
+    auction_id: int
+    action: str
+    comments: Optional[str] = None
+
+@router.post("/approve-auction")
+@router.post("/auctions/{auction_id}/approve")
+def approve_or_reject_auction(
+    payload: ApproveAuctionPayload,
+    admin: models.Admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Approves or rejects a pending auction item.
+    When approved, status is changed to 'Live' so it appears on bidder pages immediately.
+    """
+    auction = db.query(models.Auction).filter(models.Auction.id == payload.auction_id).first()
+    if not auction:
+        raise HTTPException(status_code=404, detail="Auction not found")
+
+    action_lower = payload.action.lower()
+    now = datetime.utcnow()
+
+    if action_lower in ["approve", "approved"]:
+        auction.status = "Live"
+        auction.start_time = now
+        auction.end_time = now + timedelta(days=7)
+        
+        approval_log = models_phase2.AuctionApproval(
+            auction_id=auction.id,
+            admin_id=admin.id,
+            status="Approved",
+            comments=payload.comments or "Approved by Administrator."
+        )
+        db.add(approval_log)
+        db.commit()
+        db.refresh(auction)
+        return {"message": f"Auction #{auction.id} ('{auction.title}') approved and is now LIVE!", "status": "Live"}
+    elif action_lower in ["reject", "rejected"]:
+        auction.status = "Rejected"
+        approval_log = models_phase2.AuctionApproval(
+            auction_id=auction.id,
+            admin_id=admin.id,
+            status="Rejected",
+            comments=payload.comments or "Rejected by Administrator."
+        )
+        db.add(approval_log)
+        db.commit()
+        db.refresh(auction)
+        return {"message": f"Auction #{auction.id} rejected.", "status": "Rejected"}
+    else:
+        raise HTTPException(status_code=400, detail="Action must be 'approve' or 'reject'")

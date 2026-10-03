@@ -74,8 +74,7 @@ async def create_auction(
         start_time=dt_start,
         end_time=dt_end,
         reserve_price=reserve_price,
-        status="Pending_Verification", # Mark Pending for admin review even if AI verified
-        image_url=cloud_image_url
+        status="Pending_Verification" # Mark Pending for admin review even if AI verified
     )
     db.add(new_auction)
     db.commit()
