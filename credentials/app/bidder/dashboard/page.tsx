@@ -402,6 +402,7 @@ export default function BidderDashboard() {
 
               return (
                 <div key={auction.id} className={s.auctionCardLuxury}>
+                  <div className={s.cardImgWrap}>
                     <img 
                       src={cardImgUrl} 
                       alt={auction.title} 
