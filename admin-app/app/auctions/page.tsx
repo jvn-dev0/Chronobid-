@@ -39,6 +39,22 @@ interface AuctionDetail {
   image_url: string;
 }
 
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>, title?: string, category?: string) => {
+  const target = e.currentTarget;
+  const text = (title || category || '').toLowerCase();
+  if (text.includes('jewel') || text.includes('gold') || text.includes('ring') || text.includes('diamond') || text.includes('emerald') || text.includes('ruby')) {
+    target.src = '/category-assets/jewellery.png';
+  } else if (text.includes('art') || text.includes('paint') || text.includes('canvas')) {
+    target.src = '/category-assets/art.png';
+  } else if (text.includes('coin') || text.includes('currency')) {
+    target.src = '/category-assets/coins.png';
+  } else if (text.includes('car') || text.includes('auto')) {
+    target.src = '/category-assets/automobiles.png';
+  } else {
+    target.src = '/category-assets/watches.png';
+  }
+};
+
 export default function PowerAdminAuctionsPage() {
   const [statusFilter, setStatusFilter] = useState<'All' | 'Live' | 'Ending_Soon' | 'Draft' | 'Completed' | 'Cancelled'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -378,6 +394,7 @@ export default function PowerAdminAuctionsPage() {
                           <img
                             src={auc.image_url}
                             alt={auc.title}
+                            onError={(e) => handleImageError(e, auc.title, auc.category)}
                             style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', backgroundColor: '#0F172A', border: '1px solid #334155' }}
                           />
                           <div>
@@ -491,6 +508,7 @@ export default function PowerAdminAuctionsPage() {
                   <img
                     src={selectedAuction.image_url}
                     alt={selectedAuction.title}
+                    onError={(e) => handleImageError(e, selectedAuction.title, selectedAuction.category)}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </div>

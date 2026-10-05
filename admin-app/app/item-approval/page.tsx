@@ -52,6 +52,22 @@ interface ItemDetail {
   logs: { status: string; comments?: string; timestamp: string }[];
 }
 
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>, title?: string, category?: string) => {
+  const target = e.currentTarget;
+  const text = (title || category || '').toLowerCase();
+  if (text.includes('jewel') || text.includes('gold') || text.includes('ring') || text.includes('diamond') || text.includes('emerald') || text.includes('ruby')) {
+    target.src = '/category-assets/jewellery.png';
+  } else if (text.includes('art') || text.includes('paint') || text.includes('canvas')) {
+    target.src = '/category-assets/art.png';
+  } else if (text.includes('coin') || text.includes('currency')) {
+    target.src = '/category-assets/coins.png';
+  } else if (text.includes('car') || text.includes('auto')) {
+    target.src = '/category-assets/automobiles.png';
+  } else {
+    target.src = '/category-assets/watches.png';
+  }
+};
+
 export default function ItemApprovalPage() {
   const [statusFilter, setStatusFilter] = useState<'Pending_Verification' | 'Live' | 'Rejected' | 'All'>('Pending_Verification');
   const [riskFilter, setRiskFilter] = useState<string>('All');
@@ -436,6 +452,7 @@ export default function ItemApprovalPage() {
                           <img
                             src={item.image_url}
                             alt={item.title}
+                            onError={(e) => handleImageError(e, item.title, item.category)}
                             style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', backgroundColor: '#0F172A', border: '1px solid #334155' }}
                           />
                           <div>
@@ -580,6 +597,7 @@ export default function ItemApprovalPage() {
                   <img
                     src={selectedItem.images[activeImageIndex] || selectedItem.images[0] || '/uploads/download (3).jpg'}
                     alt={selectedItem.title}
+                    onError={(e) => handleImageError(e, selectedItem.title, selectedItem.category)}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </div>

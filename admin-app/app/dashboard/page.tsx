@@ -505,11 +505,25 @@ export default function PowerAdminDashboard() {
                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-3.5 px-2 font-medium text-slate-900 flex items-center gap-3">
                             <div className="w-9 h-9 rounded-lg bg-slate-100 overflow-hidden relative shrink-0 border border-slate-200">
-                              <Image
+                              <img
                                 src={item.image_url}
                                 alt={item.title}
-                                fill
-                                className="object-cover"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  const text = (item.title || item.category || '').toLowerCase();
+                                  if (text.includes('jewel') || text.includes('gold') || text.includes('ring') || text.includes('diamond') || text.includes('emerald') || text.includes('ruby')) {
+                                    target.src = '/category-assets/jewellery.png';
+                                  } else if (text.includes('art') || text.includes('paint') || text.includes('canvas')) {
+                                    target.src = '/category-assets/art.png';
+                                  } else if (text.includes('coin') || text.includes('currency')) {
+                                    target.src = '/category-assets/coins.png';
+                                  } else if (text.includes('car') || text.includes('auto')) {
+                                    target.src = '/category-assets/automobiles.png';
+                                  } else {
+                                    target.src = '/category-assets/watches.png';
+                                  }
+                                }}
                               />
                             </div>
                             <span className="truncate max-w-[130px]" title={item.title}>{item.title}</span>
